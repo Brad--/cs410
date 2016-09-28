@@ -107,9 +107,9 @@ bool Model::read(ifstream& file) {
 
 bool Model::write(string filename, string ext) const {
     string fileTop = filename.substr(0, filename.size() - 4);
-    const char *cFilename = (fileTop + ext + ".ply").c_str();
+    // const char *cFilename = (fileTop + ext + ".ply").c_str();
     std::ofstream outfile;
-    outfile.open(cFilename);
+    outfile.open(fileTop + ext + ".ply");
 
     outfile << header << endl;
 
