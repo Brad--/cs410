@@ -3,7 +3,7 @@
 
 using std::string;
 using std::cout;
-using std::endl;
+using std::endl;    
 
 #include "Model.h"
 
@@ -12,13 +12,15 @@ int main(int argc, char* argv[]) {
         cout << "Usage: raytracer <CAMERA_MODEL> <PLY_MODEL(S)> <OUTFILE_NAME>" << endl;
         return 1;
     }
-    string camera_filename (argv[1]);
-    string outfile_name (argv[argc - 1]);
+    string cameraFilename (argv[1]);
+    string outfileName (argv[argc - 1]);
 
-    string model_files [argc - 3];
-    for(int i = 2; i < argc-1; i++) {
-        model_files[i - 2] = argv[i];
-    }    
-
+    int numModels = argc - 3;
+    Model* models [numModels];
+    for(int i = 2; i < argc-1; i++)
+        models [i - 2] = new Model(argv[i]);
+    
+    for(int i = 0; i < numModels; i++)  delete models[i];
+        
 	return 0;
 }
