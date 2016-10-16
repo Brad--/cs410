@@ -2,21 +2,27 @@
 #define CAMERA_H_INCLUDE
 
 #include <iostream>
+#include <string>
+using std::string;
+
+#include <fstream>
 
 class Camera {
 public:
     Camera(string filename);
     ~Camera();
 
+    double throwRay(int x, int y);
+
     void read(std::ifstream& file);
     void printCamera();
 
-    inline double* getEye()    {return &eye;}
-    inline double* getLook()   {return &look;}
-    inline double* getUp()     {return &up;}
-    inline double* getBounds() {return &bounds;}
-    inline double* getRes()    {return &res;}
-    inline double  getD()      {return d;}
+    inline double* getEye() {return eye;}
+    inline double* getLook() {return look;}
+    inline double* getUp() {return up;}
+    inline double* getBounds() {return bounds;}
+    inline double* getRes() {return res;}
+    inline double  getD() {return d;}
 
 private:
     double eye [3];

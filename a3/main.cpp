@@ -6,6 +6,7 @@ using std::cout;
 using std::endl;    
 
 #include "Model.h"
+#include "Camera.h"
 
 int main(int argc, char* argv[]) {
     if(argc < 4) {
@@ -19,8 +20,15 @@ int main(int argc, char* argv[]) {
     Model* models [numModels];
     for(int i = 2; i < argc-1; i++)
         models [i - 2] = new Model(argv[i]);
+
+    Camera* camera = new Camera(argv[1]);
+    camera->printCamera();
     
-    for(int i = 0; i < numModels; i++)  delete models[i];
-        
+    // Clean memory
+    for(int i = 0; i < numModels; i++)
+        delete models[i];
+    delete camera;
+
 	return 0;
 }
+

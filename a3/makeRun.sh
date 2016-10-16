@@ -1,3 +1,3 @@
 #!/bin/bash
 make
-./raytracer camera_model cube.ply outfile
+./raytracer camerafile cube.ply outfile

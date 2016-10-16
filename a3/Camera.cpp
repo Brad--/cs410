@@ -4,14 +4,27 @@ using std::ifstream;
 using std::cout;
 using std::endl;
 #include <string>
+using std::string;
+using std::stod;
 #include <cstring>
 
 Camera::Camera(string filename) {
     char cFilename [256];
+    std::strcpy(cFilename, filename.c_str());
 
     ifstream file(cFilename);
     read(file);
     file.close();
+}
+
+Camera::~Camera() { }
+
+double Camera::throwRay(int x, int y) {
+    // Throws a ray at pixel (x,y) and determines if the ray intersects a model
+    // Returns -1 if no intersection, and distance of the intersection if the intersection exists
+    // if throwRay = -1, the user should use the default background color, (239, 239, 239)
+
+    return -1;
 }
 
 void Camera::read(ifstream& file) {
@@ -30,30 +43,36 @@ void Camera::read(ifstream& file) {
 
         if (strcmp(token, "eye") == 0) {
             for(int i = 0; i < 3; i++) {
-                eye[i] = token = strtok(NULL, " ");
+                token = strtok(NULL, " ");
+                eye[i] = stod(token);
             }
         }
         else if (strcmp(token, "look") == 0) {
             for(int i = 0; i < 3; i++) {
-                look[i] = token = strtok(NULL, " ");
+                token = strtok(NULL, " ");
+                look[i] = stod(token);
             }
         }
         else if (strcmp(token, "up") == 0) {
             for(int i = 0; i < 3; i++) {
-                up[i] = token = strtok(NULL, " ");
+                token = strtok(NULL, " ");
+                up[i] = stod(token);
             }
         }
         else if (strcmp(token, "d") == 0) {
-            d = token = strtok(NULL, " ");
+            token = strtok(NULL, " ");
+            d = stod(token);
         }
         else if (strcmp(token, "bounds") == 0) {
             for(int i = 0; i < 4; i++) {
-                bounds[i] = token = strtok(NULL, " ");
+                token = strtok(NULL, " ");
+                bounds[i] = stod(token);
             }
         }
         else if (strcmp(token, "res") == 0) {
             for(int i = 0; i < 2; i++) {
-                res[i] = token = strtok(NULL, " ");
+                token = strtok(NULL, " ");
+                res[i] = stod(token);
             }
         }
         else {
@@ -80,5 +99,5 @@ void Camera::printCamera(){
     for(int i = 0; i < 4; i++) {
         cout << bounds[i]<< ", ";
     }
-    cout << "Res: " << res[0] << ", " << res[1] << endl;
+    cout << endl << "Res: " << res[0] << ", " << res[1] << endl;
 }

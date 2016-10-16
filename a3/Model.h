@@ -5,7 +5,6 @@
 using std::string;
 #include <fstream>
 
-// Get rid of this later
 #include <iostream>
 
 #include "Point.h"
