@@ -73,7 +73,9 @@ double* Scene::distToDepth(double d) {
         cout << "You can't generate relative distance without a relative minimum and maximum. Throw your rays first!" << endl;
         throw -1;
     }
-    if(d == -1) {
+
+    // If there wasn't an intersection, return the background color
+    if(d == 0) {
         double* background = new double[3];
         for(int i = 0; i < 3; i++)
             background[i] = 239;

@@ -1,4 +1,5 @@
 #include "Camera.h"
+#include "Linear.h"
 
 using std::ifstream;
 using std::cout;
@@ -9,6 +10,7 @@ using std::stod;
 #include <cstring>
 
 Camera::Camera(string filename) {
+    l = new Linear();
     char cFilename [256];
     std::strcpy(cFilename, filename.c_str());
 
@@ -17,13 +19,27 @@ Camera::Camera(string filename) {
     file.close();
 }
 
-Camera::~Camera() { }
+Camera::~Camera() { 
+    delete l;
+}
 
 double Camera::throwRay(int x, int y) {
     // Throws a ray at pixel (x,y) and determines if the ray intersects a model
     // Returns -1 if no intersection, and distance of the intersection if the intersection exists
     // if throwRay = -1, the user should use the default background color, (239, 239, 239)
+    double right = bounds[2];
+    double left  = bounds[0];
+    double top   = bounds[3];
+    double btm   = bounds[1];
 
+    double px = (x / (res[0] - 1)) * (right - left) + left;
+    double py = (y / (res[1] - 1)) * (top - btm) + btm;
+
+    // near * (L-E)
+    double* wv = l->scalar(l->subtract(look, eye, 3), d, 3);
+
+    // double pixpt;
+    delete [] wv;
     return 0;
 }
 

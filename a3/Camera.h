@@ -7,6 +7,8 @@ using std::string;
 
 #include <fstream>
 
+#include "Linear.h"
+
 class Camera {
 public:
     Camera(string filename);
@@ -28,10 +30,11 @@ private:
     double eye [3];
     double look [3];
     double up [3];
-    double bounds [4];
+    double bounds [4]; // left, bottom, right, top
     double res [2];
 
     double d;
+    Linear* l;
 };
 
 #endif
