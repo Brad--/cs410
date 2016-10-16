@@ -24,7 +24,7 @@ double Camera::throwRay(int x, int y) {
     // Returns -1 if no intersection, and distance of the intersection if the intersection exists
     // if throwRay = -1, the user should use the default background color, (239, 239, 239)
 
-    return -1;
+    return 0;
 }
 
 void Camera::read(ifstream& file) {
@@ -36,10 +36,14 @@ void Camera::read(ifstream& file) {
     char* token;
     char* currChars;
 
-    while (!file.eof()){
+    do {
         getline(file, curr);
         currChars = const_cast<char*>(curr.c_str());
         token = strtok(currChars, " ");
+
+        // return if endline is the last character in the file
+        if(strcmp(currChars, "") == 0)
+            return;
 
         if (strcmp(token, "eye") == 0) {
             for(int i = 0; i < 3; i++) {
@@ -78,7 +82,7 @@ void Camera::read(ifstream& file) {
         else {
             // skip empty / nonsense lines
         }
-    }
+    } while(!file.eof());
 }
 
 void Camera::printCamera(){

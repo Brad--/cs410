@@ -13,9 +13,6 @@ int main(int argc, char* argv[]) {
     if(argc < 4) {
         cout << "Usage: raytracer <CAMERA_MODEL> <PLY_MODEL(S)> <OUTFILE_NAME>" << endl;
     }
-    string cameraFilename (argv[1]);
-    string outfileName (argv[argc - 1]);
-
     int numModels = argc - 3;
     Model* models [numModels];
     for(int i = 2; i < argc-1; i++)
@@ -23,7 +20,8 @@ int main(int argc, char* argv[]) {
 
     Camera* camera = new Camera(argv[1]);
     Scene* scene = new Scene();
-    scene->distToDepth(1);
+    scene->genIntersections(camera);
+    scene->depthWrite(argv[argc - 1]);
 
     // Clean memory
     for(int i = 0; i < numModels; i++)

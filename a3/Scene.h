@@ -2,6 +2,7 @@
 #define SCENE_H_INCLUDE
 
 #include "Camera.h"
+#include <string>
 
 class Scene{
 public:
@@ -9,6 +10,7 @@ public:
     ~Scene();
 
     void genIntersections(Camera * cam);
+    void depthWrite(std::string filename);
 
     double* distToDepth(double d);
 private:
@@ -21,6 +23,7 @@ private:
     double** image;
     int resX;
     int resY;
+    
 };
 
 #endif

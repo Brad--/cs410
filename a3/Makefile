@@ -16,6 +16,6 @@ Camera.o: Camera.cpp
 Scene.o: Scene.cpp
 	$(CC) $(FLAGS) -c Scene.cpp
 clean:
-	rm -f *.o $(TAR) $(EXE) *rounded.ply *centered.ply
+	rm -f *.o $(TAR) $(EXE) *rounded.ply *centered.ply *.ppm
 tar:
 	tar -cf $(TAR) *.cpp *.h README* Makefile
