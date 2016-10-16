@@ -7,11 +7,43 @@ using std::cout;
 using std::endl;
 
 Scene::Scene() { 
-    tmin = -1;
+    tmin = 999999;
     tmax = -1;
 }
 
-Scene::~Scene() { }
+Scene::~Scene() { 
+    if(image != NULL){
+        for(int i = 0; i < resX; i++)
+            delete [] image[i];
+        delete[] image;
+    }
+}
+
+void Scene::allocateImage() {
+    image = new double* [resX];
+    for(int i = 0; i < resX; i++)
+        image[i] = new double [resY];
+}
+
+void Scene::genIntersections(Camera * cam){
+    double* res = cam->getRes();
+    resX = res[0];
+    resY = res[1];
+    allocateImage();
+    double dist = -1;
+    for(int x = 0; x < resX; x++){
+        for(int y = 0; y < resY; y++) {
+            dist = cam->throwRay(x, y);
+            if(dist < tmin)
+                tmin = dist;
+            if (dist > tmax)
+                tmax = dist;
+            image[x][y] = dist;
+        }
+    }
+
+    // maybe delete res, idk though
+}
 
 double* Scene::distToDepth(double d) {
     if(tmin == -1 && tmax == -1){
