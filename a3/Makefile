@@ -1,6 +1,6 @@
 CC=g++
 FLAGS=-I. -Wall -g -O2 -std=c++11
-FILES=main.o Model.o Point.o Camera.o
+FILES=main.o Model.o Point.o Camera.o Scene.o
 TAR=a3.tar
 EXE=raytracer
 all: $(FILES)
@@ -13,6 +13,8 @@ Point.o: Point.cpp
 	$(CC) $(FLAGS) -c Point.cpp
 Camera.o: Camera.cpp
 	$(CC) $(FLAGS) -c Camera.cpp
+Scene.o: Scene.cpp
+	$(CC) $(FLAGS) -c Scene.cpp
 clean:
 	rm -f *.o $(TAR) $(EXE) *rounded.ply *centered.ply
 tar:
