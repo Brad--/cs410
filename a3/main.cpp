@@ -8,6 +8,7 @@ using std::endl;
 #include "Model.h"
 #include "Camera.h"
 #include "Scene.h"
+#include "Linear.h"
 
 int main(int argc, char* argv[]) {
     if(argc < 4) {

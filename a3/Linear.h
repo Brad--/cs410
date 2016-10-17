@@ -8,7 +8,8 @@ public:
     double* subtract(double* v1, double* v2, int length);
     double* unit(double* v1, int length);
     double  dot(double* v1, double* v2, int length);
-    double  length(double* v1, int length);
+    double  vLength(double* v1, int length);
+    double* cross3(double* v1, double* v2);
 private:
 };
 
