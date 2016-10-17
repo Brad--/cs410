@@ -9,8 +9,8 @@ using std::string;
 using std::stod;
 #include <cstring>
 
-Camera::Camera(string filename) {
-    l = new Linear();
+Camera::Camera(string filename, Linear* inc_l) {
+    l = inc_l;
     char cFilename [256];
     std::strcpy(cFilename, filename.c_str());
 
@@ -19,10 +19,10 @@ Camera::Camera(string filename) {
     file.close();
 }
 
-Camera::~Camera() { 
-    delete l;
-}
+Camera::~Camera() { }
 
+// Should throw 0 or something that isn't -1 because -1 causes an error as defined by me
+// This is leaking like a madman, write a class for vectors ya dingus
 double Camera::throwRay(int x, int y) {
     // Throws a ray at pixel (x,y) and determines if the ray intersects a model
     // Returns -1 if no intersection, and distance of the intersection if the intersection exists
@@ -36,10 +36,29 @@ double Camera::throwRay(int x, int y) {
     double py = (y / (res[1] - 1)) * (top - btm) + btm;
 
     // near * (L-E)
-    double* wv = l->scalar(l->subtract(look, eye, 3), d, 3);
+    // This is the one from the code snippet
+    // double* wv = l->scalar(l->subtract(look, eye, 3), d, 3);
+    
+    // WV
+    double* zAxis = l->unit(l->subtract(eye, look, 3), 3);
+    // UV
+    double* xAxis = l->unit(l->cross3(zAxis, up), 3);
+    // VV
+    double* yAxis = l->cross3(zAxis, xAxis); // implicitly unit length
 
-    // double pixpt;
-    delete [] wv;
+    zAxis = l->scalar(zAxis, d, 3);
+    xAxis = l->scalar(xAxis, px, 3);
+    yAxis = l->scalar(yAxis, py, 3);
+
+    // pixpt - eye is the ray from eye -> pixpt
+    double* pixpt = l->add(l->add(eye, zAxis, 3), l->add(xAxis, yAxis, 3), 3);
+    double* ray = l->subtract(pixpt, eye, 3);
+    
+    delete [] pixpt;
+    delete [] zAxis;
+    delete [] xAxis;
+    delete [] yAxis;
+    delete [] ray;
     return 0;
 }
 

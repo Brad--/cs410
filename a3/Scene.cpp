@@ -14,8 +14,8 @@ Scene::Scene() {
     tmax = -1;
 }
 
-Scene::~Scene() { 
-    if(image != NULL){
+Scene::~Scene() {
+    if(image != nullptr){
         for(int i = 0; i < resX; i++)
             delete [] image[i];
         delete[] image;
@@ -44,8 +44,6 @@ void Scene::genIntersections(Camera * cam){
             image[x][y] = dist;
         }
     }
-
-    // maybe delete res, idk though
 }
 
 // Write out the image as relative depth in pgm format

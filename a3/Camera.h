@@ -11,7 +11,7 @@ using std::string;
 
 class Camera {
 public:
-    Camera(string filename);
+    Camera(string filename, Linear* inc_l);
     ~Camera();
 
     double throwRay(int x, int y);

@@ -19,16 +19,17 @@ int main(int argc, char* argv[]) {
     for(int i = 2; i < argc-1; i++)
         models [i - 2] = new Model(argv[i]);
 
-    Camera* camera = new Camera(argv[1]);
-    Scene* scene = new Scene();
-    scene->genIntersections(camera);
-    scene->depthWrite(argv[argc - 1]);
+    Linear* linear = new Linear();
+    Camera* camera = new Camera(argv[1], linear);
+    Scene scene = Scene();
+    scene.genIntersections(camera);
+    // scene.depthWrite(argv[argc - 1]);
 
     // Clean memory
     for(int i = 0; i < numModels; i++)
         delete models[i];
+    delete linear;
     delete camera;
-    delete scene;
 
 	return 0;
 }
