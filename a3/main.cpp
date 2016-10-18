@@ -23,7 +23,7 @@ int main(int argc, char* argv[]) {
     Camera* camera = new Camera(argv[1], linear);
     Scene scene = Scene();
     scene.genIntersections(camera);
-    // scene.depthWrite(argv[argc - 1]);
+    scene.depthWrite(argv[argc - 1]);
 
     // Clean memory
     for(int i = 0; i < numModels; i++)

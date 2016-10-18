@@ -30,7 +30,7 @@ private:
     double eye [3];
     double look [3];
     double up [3];
-    double bounds [4]; // left, bottom, right, top
+    double bounds [4]; // left, bottom, right, top (bottom, left, top, right a la Beveridge)
     double res [2];
 
     double d;

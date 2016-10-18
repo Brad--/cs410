@@ -24,13 +24,12 @@ Camera::~Camera() { }
 // Should throw 0 or something that isn't -1 because -1 causes an error as defined by me
 // This is leaking like a madman, write a class for vectors ya dingus
 double Camera::throwRay(int x, int y) {
-    // Throws a ray at pixel (x,y) and determines if the ray intersects a model
     // Returns -1 if no intersection, and distance of the intersection if the intersection exists
-    // if throwRay = -1, the user should use the default background color, (239, 239, 239)
-    double right = bounds[2];
     double left  = bounds[0];
-    double top   = bounds[3];
     double btm   = bounds[1];
+    double right = bounds[2];
+    double top   = bounds[3];
+
 
     double px = (x / (res[0] - 1)) * (right - left) + left;
     double py = (y / (res[1] - 1)) * (top - btm) + btm;
@@ -59,7 +58,9 @@ double Camera::throwRay(int x, int y) {
     delete [] xAxis;
     delete [] yAxis;
     delete [] ray;
-    return 0;
+
+    // Distance should be the distance from the image plane to the object
+    return -1; // 2 because otherwise it triggers the unset tmin/tmax
 }
 
 void Camera::read(ifstream& file) {

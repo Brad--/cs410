@@ -11,7 +11,7 @@ using std::ofstream;
 
 Scene::Scene() { 
     tmin = 999999;
-    tmax = -1;
+    tmax = -2;
 }
 
 Scene::~Scene() {
@@ -37,10 +37,12 @@ void Scene::genIntersections(Camera * cam){
     for(int x = 0; x < resX; x++){
         for(int y = 0; y < resY; y++) {
             dist = cam->throwRay(x, y);
-            if(dist < tmin)
-                tmin = dist;
-            if (dist > tmax)
-                tmax = dist;
+            if(dist != -1){ // Don't set the minimum with the non-intersections
+                if(dist < tmin)
+                    tmin = dist;
+                if (dist > tmax)
+                    tmax = dist;
+            }
             image[x][y] = dist;
         }
     }
@@ -67,13 +69,13 @@ void Scene::depthWrite(string filename) {
 }
 
 double* Scene::distToDepth(double d) {
-    if(tmin == -1 && tmax == -1){
+    if(tmin == -2 && tmax == 999999){
         cout << "You can't generate relative distance without a relative minimum and maximum. Throw your rays first!" << endl;
         throw -1;
     }
 
     // If there wasn't an intersection, return the background color
-    if(d == 0) {
+    if(d == -1) {
         double* background = new double[3];
         for(int i = 0; i < 3; i++)
             background[i] = 239;
