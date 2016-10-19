@@ -36,6 +36,13 @@ double* Linear::unit(double* v, int length) {
     return scalar(v, mag, length);
 }
 
+void Linear::makeUnit(double* v, int length) {
+    double mag = vLength(v, length);
+    for(int i = 0; i < length; i++) {
+        v[i] /= mag;
+    }
+}
+
 double Linear::dot(double* v1, double* v2, int length){
     double sum = 0;
     for(int i = 0; i < length; i++) {
