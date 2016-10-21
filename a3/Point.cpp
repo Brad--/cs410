@@ -1,5 +1,9 @@
 #include "Point.h"
 
+#include <iostream>
+using std::endl;
+using std::cout;
+
 Point::Point(double u_x, double u_y, double u_z) {
     x = u_x;
     y = u_y;
@@ -28,4 +32,8 @@ void Point::translate(double deltaX, double deltaY, double deltaZ) {
     x -= deltaX;
     y -= deltaY;
     z -= deltaZ;
+}
+
+void Point::print() {
+    cout << "x: " << x << ", y: " << y << ", z: " << z << endl;
 }

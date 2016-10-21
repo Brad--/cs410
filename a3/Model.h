@@ -8,6 +8,7 @@ using std::string;
 #include <iostream>
 
 #include "Point.h"
+#include "Face.h"
 
 class Model {
 public:
@@ -32,7 +33,8 @@ private:
     int numPoints, numFaces;
 
     Point* points;
-    string header, faces;
+    Face* faces;
+    string header;
 };
 
 #endif

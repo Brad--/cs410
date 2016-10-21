@@ -14,6 +14,7 @@ int main(int argc, char* argv[]) {
     if(argc < 4) {
         cout << "Usage: raytracer <CAMERA_MODEL> <PLY_MODEL(S)> <OUTFILE_NAME>" << endl;
     }
+    
     int numModels = argc - 3;
     Model* models [numModels];
     for(int i = 2; i < argc-1; i++)

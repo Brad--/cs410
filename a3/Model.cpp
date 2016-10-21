@@ -18,12 +18,14 @@ Model::Model(string filename) {
 
     ifstream file(cFilename);
     read(file);
-    file.close();
 }
 
 Model::~Model() {
-    if(points != NULL)
-        free(points);
+    if(points != nullptr)
+        delete [] points;
+    if(faces != nullptr)
+        delete [] faces;
+
 }
 
 // Reads .ply file and stores appropriate information
@@ -70,7 +72,9 @@ bool Model::read(ifstream& file) {
     }
     header = headerTemp;
 
-    points = (Point*)malloc(sizeof(Point) * numPoints);
+    // points = (Point*)malloc(sizeof(Point) * numPoints);
+    points = new Point[numPoints];
+    faces  = new Face [numFaces];
     for(int i = 0; i < numPoints; i++) {
         double tempX, tempY, tempZ;
 
@@ -88,20 +92,32 @@ bool Model::read(ifstream& file) {
         // cout << "X: " << tempX << " Y: " << tempY << " Z: " << tempZ << endl;
     } // Done reading Points
 
-    string tempFaces = "";
-    while(!file.eof()) {
+    int numPointsOnFace = 0;
+    for(int currFace = 0; currFace < numFaces; currFace++) {
         getline(file, curr);
-        tempFaces += curr + "\n"; // Don't add the endline in the last case
+        currChars = const_cast<char*>(curr.c_str());
+        token = strtok(currChars, " ");
+
+        numPointsOnFace = stoi(token);
+        Point* facePoints = new Point[numPointsOnFace];
+        for(int i = 0; i < numPointsOnFace; i++) {
+            token = strtok(NULL, " ");
+            facePoints[i] = points[stoi(token)];
+        }
+        faces[currFace].init(numPointsOnFace, facePoints);
+        currFace++;
     } // Done reading Faces
-    faces = tempFaces;
 
     // Debuggin'
     // cout << "Begin Faces:\n" << faces << endl;
     // cout << "Point0: " << points[0].getX() << endl;
     // cout << "Header w/o elements: " << headerTemp << endl;
     // cout << "Points: " << numPoints << endl;
-    // cout << "Faces: " << numFaces << endl;
+    for(int i = 0; i < numFaces; i++) {
+        faces[i].print();
+    }
 
+    file.close();
     return true;
 }
 
@@ -117,7 +133,7 @@ bool Model::write(string filename, string ext) const {
         outfile << points[i].getX() << " " << points[i].getY() << " " << points[i].getZ() << endl;
     }
 
-    outfile << faces;
+    // outfile << faces;
     outfile.close();
 
     return true;

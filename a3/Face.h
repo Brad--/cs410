@@ -8,7 +8,9 @@ public:
     Face();
     ~Face();
 
+    void init(int u_numPoints, Point* u_points);
     void calcNormal();
+    void print();
     inline double* getNormal() {return normal;}
     
 private:

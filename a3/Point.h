@@ -16,6 +16,8 @@ public:
 
     void translate(double deltaX, double deltaY, double deltaZ);
 
+    void print();
+
 private:
     double x, y, z;
 };
