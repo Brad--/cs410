@@ -52,11 +52,11 @@ double Camera::throwRay(int x, int y) {
     double* pixpt = l->add(temp, temp2, 3);
     double* ray = l->subtract(pixpt, eye, 3);
 
-    cout << "Ray calculated, calculating intersect . . ." << endl;
+    cout << "Ray calculated: [" << ray[0] << ", " << ray[1] << ", " << ray[2] << "]" << endl;
 
     double distance = calcIntersect(ray);
 
-    cout << "Distance calculated, clearing data . . ." << endl;
+    cout << "Distance calculated: " << distance << endl;
 
     // distance from the image plane to the intersection rather than the image plane
     // distance -= 2
@@ -84,7 +84,6 @@ double Camera::calcIntersect(double* ray) {
     for(int i = 0; i < numModels; i++) {
         numFaces = models[i].getNumFaces();
         faces = models[i].getFaces();
-        cout << "Faces: " << numFaces << endl;
 
         for(int j = 0; j < numFaces; j++) {
             cout << "Checking intersection with face " << j << ". . ." << endl;
@@ -98,13 +97,10 @@ double Camera::calcIntersect(double* ray) {
 
 // -1 if no intersect
 double Camera::cramers(Face* face, double* ray) {
-    cout << "Getting points . . ." << endl;
     Point* trianglePoints = face->getPoints();
-    cout << "Points received!" << endl;
     Point triangleA = trianglePoints[0];
     Point triangleB = trianglePoints[1];
     Point triangleC = trianglePoints[2];
-    cout << "Points unrolled" << endl;
 
     // calc beta
     // make sure beta is less than equal to 1, and greater than equal to zero

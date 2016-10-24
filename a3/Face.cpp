@@ -20,6 +20,7 @@ Face::~Face() {
 }
 
 void Face::init(int u_numPoints, Point* u_points) {
+    cout << "Face init" << std::endl;
     numPoints = u_numPoints;
     points = u_points;
     calcNormal();

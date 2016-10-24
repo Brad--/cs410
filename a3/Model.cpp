@@ -115,7 +115,6 @@ bool Model::read(ifstream& file) {
             facePoints[i] = points[stoi(token)];
         }
         faces[currFace].init(numPointsOnFace, facePoints);
-        currFace++;
     } // Done reading Faces
 
     // Debuggin'
