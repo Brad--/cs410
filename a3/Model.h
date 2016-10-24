@@ -13,12 +13,16 @@ using std::string;
 class Model {
 public:
     Model(string filename);
+    Model() {};
     ~Model();
 
     inline Point* getPoints() const {return points;}
+    inline Face* getFaces() const {return faces;}
+    inline double getNumFaces() const {return numFaces;}
 
     bool  read(std::ifstream& file);
     bool  write(string filename, string ext) const;
+    void  init(string filename);
     void  addPoint(Point point);
     void  normalize();
     void  whiten();

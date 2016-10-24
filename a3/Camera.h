@@ -8,12 +8,15 @@ using std::string;
 #include <fstream>
 
 #include "Linear.h"
+#include "Model.h"
 
 class Camera {
 public:
-    Camera(string filename, Linear* inc_l);
+    Camera(string filename, Linear* inc_l, Model* models, int numModels);
     ~Camera();
 
+    double cramers(Face* face, double* ray);
+    double calcIntersect(double* ray);
     double throwRay(int x, int y);
 
     void read(std::ifstream& file);
@@ -27,14 +30,16 @@ public:
     inline double  getD() {return d;}
 
 private:
+
     double eye [3];
     double look [3];
     double up [3];
     // double bounds [4]; // left, bottom, right, top (bottom, left, top, right a la Beveridge)
     double res [2];
 
-    double left, btm, right, top, d;
+    double left, btm, right, top, d, numModels;
     Linear* l;
+    Model* models;
 };
 
 #endif

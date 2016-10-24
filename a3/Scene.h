@@ -9,7 +9,7 @@ public:
     Scene();
     ~Scene();
 
-    void genIntersections(Camera * cam);
+    void genDistances(Camera * cam);
     void depthWrite(std::string filename);
 
     double* distToDepth(double d);

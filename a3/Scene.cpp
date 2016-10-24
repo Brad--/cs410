@@ -28,7 +28,7 @@ void Scene::allocateImage() {
         image[i] = new double [resY];
 }
 
-void Scene::genIntersections(Camera * cam){
+void Scene::genDistances(Camera* cam){
     double* res = cam->getRes();
     resX = res[0];
     resY = res[1];
@@ -36,7 +36,9 @@ void Scene::genIntersections(Camera * cam){
     double dist = -1;
     for(int x = 0; x < resX; x++){
         for(int y = 0; y < resY; y++) {
+            cout << "Throwing ray . . ." << endl;
             dist = cam->throwRay(x, y);
+            cout << "Distance returned." << endl;
             if(dist != -1){ // Don't set the minimum with the non-intersections
                 if(dist < tmin)
                     tmin = dist;

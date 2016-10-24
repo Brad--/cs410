@@ -13,19 +13,29 @@ using std::string;
 #include <math.h>
 
 Model::Model(string filename) {
+    init(filename);
+}
+
+Model::~Model() {
+    if(points != nullptr) {
+        // for(int i = 0; i < numPoints; i++)
+        //     delete points[i];
+        delete [] points;
+    }
+    if(faces != nullptr){
+        // for(int i = 0; i < numFaces; i++)
+        //     delete faces[i];
+        delete [] faces;
+    }
+
+}
+
+void Model::init(string filename) {
     char cFilename [256];
     std::strcpy(cFilename, filename.c_str());
 
     ifstream file(cFilename);
     read(file);
-}
-
-Model::~Model() {
-    if(points != nullptr)
-        delete [] points;
-    if(faces != nullptr)
-        delete [] faces;
-
 }
 
 // Reads .ply file and stores appropriate information
@@ -113,9 +123,9 @@ bool Model::read(ifstream& file) {
     // cout << "Point0: " << points[0].getX() << endl;
     // cout << "Header w/o elements: " << headerTemp << endl;
     // cout << "Points: " << numPoints << endl;
-    for(int i = 0; i < numFaces; i++) {
-        faces[i].print();
-    }
+    // for(int i = 0; i < numFaces; i++) {
+    //     faces[i].print();
+    // }
 
     file.close();
     return true;

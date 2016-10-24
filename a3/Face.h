@@ -12,6 +12,7 @@ public:
     void calcNormal();
     void print();
     inline double* getNormal() {return normal;}
+    inline Point* getPoints() {return points;}
     
 private:
     int numPoints;
