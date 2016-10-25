@@ -48,6 +48,15 @@ void Scene::genDistances(Camera* cam){
             image[x][y] = dist;
         }
     }
+
+    // for(int x = 0; x < resX; x++){
+    //     for(int y = 0; y < resY; y++) {
+    //         cout << image[x][y] << " ";
+    //     }
+    //     cout << endl;
+    // }
+
+    cout << "tmin: " << tmin << ", tmax: " << tmax << endl;
 }
 
 // Write out the image as relative depth in pgm format
@@ -61,7 +70,7 @@ void Scene::depthWrite(string filename) {
     for(int r = 0; r < resX; r++) {
         for(int c = 0; c < resY; c++) {
             color = distToDepth(image[r][c]);
-            outfile << color[0] << " " << color[1] << " " << color[2] << " ";
+            outfile << (int)color[0] << " " << (int)color[1] << " " << (int)color[2] << " ";
             delete [] color;
         }
         outfile << endl;
@@ -85,10 +94,10 @@ double* Scene::distToDepth(double d) {
     }
 
     double* color = new double[3];
-    double ratio = (2 * (d - tmin)) / (tmax - tmin);
+    double ratio = (double)(2 * (d - tmin)) / (double)(tmax - tmin);
     color[0] = max((double)0, 255 * (double)(1 - ratio)); // r
     color[2] = max((double)0, 255 * (double)(ratio - 1)); // b
-    color[1] = 255 - color[1] - color[2]; // g
+    color[1] = 255 - color[0] - color[2]; // g
 
     return color;
 }

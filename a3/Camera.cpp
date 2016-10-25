@@ -31,8 +31,9 @@ Camera::~Camera() { }
 // Returns -1 if no intersection, and distance of the intersection if the intersection exists
 double Camera::throwRay(int x, int y) {
 
-    double px = (x / (res[0] - 1)) * (right - left) + left;
-    double py = (y / (res[1] - 1)) * (top - btm) + btm;
+    double px = x / (res[0] - 1) * (right - left) + left;
+    double py = y / (res[1] - 1) * (top - btm) + btm;
+    cout << "px: " << px << ", py: " << py << endl;
     
     // WV
     double* zAxis = l->subtract(eye, look, 3);
@@ -43,7 +44,12 @@ double Camera::throwRay(int x, int y) {
     // VV
     double* yAxis = l->cross3(zAxis, xAxis); // implicitly unit length
 
-    zAxis = l->scalar(zAxis, d, 3);
+    // // Print UVW
+    // cout << "U: [" << xAxis[0] << ", " << xAxis[1] << ", " << xAxis[2] << "]" << endl;
+    // cout << "V: [" << yAxis[0] << ", " << yAxis[1] << ", " << yAxis[2] << "]" << endl;
+    // cout << "W: [" << zAxis[0] << ", " << zAxis[1] << ", " << zAxis[2] << "]" << endl;
+
+    zAxis = l->scalar(zAxis, -1 * d, 3);
     xAxis = l->scalar(xAxis, px, 3);
     yAxis = l->scalar(yAxis, py, 3);
 
@@ -52,14 +58,12 @@ double Camera::throwRay(int x, int y) {
     double* pixpt = l->add(temp, temp2, 3);
     double* ray = l->subtract(pixpt, eye, 3);
 
+    // cout << "Ray calculated: [" << ray[0] << ", " << ray[1] << ", " << ray[2] << "]" << endl;
+    l->makeUnit(ray, 3);
     cout << "Ray calculated: [" << ray[0] << ", " << ray[1] << ", " << ray[2] << "]" << endl;
-
     double distance = calcIntersect(ray);
 
     cout << "Distance calculated: " << distance << endl;
-
-    // distance from the image plane to the intersection rather than the image plane
-    // distance -= 2
 
     delete [] temp;
     delete [] temp2;
@@ -89,7 +93,7 @@ double Camera::calcIntersect(double* ray) {
             cout << "Checking intersection with face " << j << ". . ." << endl;
             distance = cramers(&faces[j], ray);
             if(distance != -1)
-                return distance;
+                return distance - d;
         }
     }
     return -1;
@@ -118,10 +122,14 @@ double Camera::cramers(Face* face, double* ray) {
     double i = triangleA.getZ() - triangleB.getZ();
 
     double j = (a * ray[1]) - (b * ray[2]);
-    double k = (a * ray[0]) - (c * ray[3]);
+    double k = (a * ray[0]) - (c * ray[2]);
     double l = (b * ray[0]) - (c * ray[1]);
 
     double z = (j * g) - (k * h) + (l * i);
+
+    if(z == 0) {
+        return -1;
+    }
 
     double beta = ((j * d) - (k * e) + (l * f)) / z;
 
@@ -147,7 +155,7 @@ double Camera::cramers(Face* face, double* ray) {
     // then t
     // p q r
     double t = ((((e * a) - (b * f)) * g) - (((d * a) - (c * f)) * h) 
-                + (((f * b) - (c * e)) * l) ) / z;
+                + (((f * b) - (c * e)) * i) ) / z;
 
     cout << "t calculated: " << t << endl;
 
@@ -200,16 +208,16 @@ void Camera::read(ifstream& file) {
         }
         else if (strcmp(token, "bounds") == 0) {
             token = strtok(NULL, " ");
+            btm = stod(token);
+            
+            token = strtok(NULL, " ");
             left = stod(token);
 
             token = strtok(NULL, " ");
-            btm = stod(token);
+            top = stod(token);
 
             token = strtok(NULL, " ");
             right = stod(token);
-
-            token = strtok(NULL, " ");
-            top = stod(token);
             // for(int i = 0; i < 4; i++) {
             //     token = strtok(NULL, " ");
             //     bounds[i] = stod(token);
