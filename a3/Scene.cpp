@@ -97,7 +97,7 @@ double* Scene::distToDepth(double d) {
     double ratio = (double)(2 * (d - tmin)) / (double)(tmax - tmin);
     color[0] = max((double)0, 255 * (double)(1 - ratio)); // r
     color[2] = max((double)0, 255 * (double)(ratio - 1)); // b
-    color[1] = 255 - color[0] - color[2]; // g
+    color[1] = 255 - (int)color[0] - (int)color[2]; // g
 
     return color;
 }
