@@ -36,16 +36,18 @@ void Scene::genDistances(Camera* cam){
     double dist = -1;
     for(int x = 0; x < resX; x++){
         for(int y = 0; y < resY; y++) {
-            cout << "Throwing ray at (" << x << ", " << y << ")" << endl;
+            // cout << "Throwing ray at (" << x << ", " << y << ")" << endl;
             dist = cam->throwRay(x, y);
-            cout << endl;
+            // cout << endl;
             if(dist != -1){ // Don't set the minimum with the non-intersections
+                if(dist > 9000)
+                    cout << "This seems fishy (" << x << ", " << y << ")" << endl;
                 if(dist < tmin)
                     tmin = dist;
                 if (dist > tmax)
                     tmax = dist;
             }
-            image[x][y] = dist;
+            image[y][x] = dist;
         }
     }
 

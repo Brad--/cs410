@@ -21,6 +21,7 @@ public:
 
     void read(std::ifstream& file);
     void printCamera();
+    void calcBasis();
 
     inline double* getEye() {return eye;}
     inline double* getLook() {return look;}
@@ -36,6 +37,9 @@ private:
     double up [3];
     // double bounds [4]; // left, bottom, right, top (bottom, left, top, right a la Beveridge)
     double res [2];
+    double* uV;
+    double* vV;
+    double* wV;
 
     double left, btm, right, top, d, numModels;
     Linear* l;

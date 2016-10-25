@@ -22,36 +22,39 @@ Camera::Camera(string filename, Linear* inc_l, Model* inc_models, int inc_numMod
 
     ifstream file(cFilename);
     read(file);
+    calcBasis();
 }
 
-Camera::~Camera() { }
+Camera::~Camera() { 
+    delete [] uV;
+    delete [] vV;
+    delete [] wV;
+}
+
+void Camera::calcBasis() {
+    wV = l->subtract(eye, look, 3);
+    l->makeUnit(wV, 3);
+
+    uV = l->cross3(wV, up);
+    l->makeUnit(uV, 3);
+
+    vV = l->cross3(wV, uV);
+}
 
 // Should throw 0 or something that isn't -1 because -1 causes an error as defined by me
 // This is leaking like a madman, write a class for vectors ya dingus
 // Returns -1 if no intersection, and distance of the intersection if the intersection exists
 double Camera::throwRay(int x, int y) {
-
     double px = x / (res[0] - 1) * (right - left) + left;
     double py = y / (res[1] - 1) * (top - btm) + btm;
-    cout << "px: " << px << ", py: " << py << endl;
-    
-    // WV
-    double* zAxis = l->subtract(eye, look, 3);
-    l->makeUnit(zAxis, 3);
-    // UV
-    double* xAxis = l->cross3(zAxis, up);
-    l->makeUnit(xAxis, 3);
-    // VV
-    double* yAxis = l->cross3(zAxis, xAxis); // implicitly unit length
+    // cout << "px: " << px << ", py: " << py << endl;
 
-    // // Print UVW
-    // cout << "U: [" << xAxis[0] << ", " << xAxis[1] << ", " << xAxis[2] << "]" << endl;
-    // cout << "V: [" << yAxis[0] << ", " << yAxis[1] << ", " << yAxis[2] << "]" << endl;
-    // cout << "W: [" << zAxis[0] << ", " << zAxis[1] << ", " << zAxis[2] << "]" << endl;
-
-    zAxis = l->scalar(zAxis, -1 * d, 3);
-    xAxis = l->scalar(xAxis, px, 3);
-    yAxis = l->scalar(yAxis, py, 3);
+    // wV
+    double* zAxis = l->scalar(wV, -1 * d, 3);
+    // uV
+    double* xAxis = l->scalar(uV, px, 3);
+    // vV
+    double* yAxis = l->scalar(vV, py, 3);
 
     double* temp  = l->add(eye, zAxis, 3);
     double* temp2 = l->add(xAxis, yAxis, 3);
@@ -60,10 +63,10 @@ double Camera::throwRay(int x, int y) {
 
     // cout << "Ray calculated: [" << ray[0] << ", " << ray[1] << ", " << ray[2] << "]" << endl;
     l->makeUnit(ray, 3);
-    cout << "Ray calculated: [" << ray[0] << ", " << ray[1] << ", " << ray[2] << "]" << endl;
+    // cout << "Ray calculated: [" << ray[0] << ", " << ray[1] << ", " << ray[2] << "]" << endl;
     double distance = calcIntersect(ray);
 
-    cout << "Distance calculated: " << distance << endl;
+    // cout << "Distance calculated: " << distance << endl;
 
     delete [] temp;
     delete [] temp2;
@@ -81,7 +84,7 @@ double Camera::throwRay(int x, int y) {
 
 // Cramer's formula on all the faces
 double Camera::calcIntersect(double* ray) {
-    //incoming barrage of obnoxious variable names
+    // store the distances
     Face* faces;
     int numFaces = -1;
     double distance = -1;   
@@ -90,10 +93,13 @@ double Camera::calcIntersect(double* ray) {
         faces = models[i].getFaces();
 
         for(int j = 0; j < numFaces; j++) {
-            cout << "Checking intersection with face " << j << ". . ." << endl;
+            // cout << "Checking intersection with face " << j << ". . ." << endl;
             distance = cramers(&faces[j], ray);
-            if(distance != -1)
+            if(distance != -1) {
+                if(distance - d < 0)
+                    return -1;
                 return distance - d;
+            }
         }
     }
     return -1;
@@ -133,7 +139,7 @@ double Camera::cramers(Face* face, double* ray) {
 
     double beta = ((j * d) - (k * e) + (l * f)) / z;
 
-    cout << "Beta calculated: " << beta << endl;
+    // cout << "Beta calculated: " << beta << endl;
 
     if(beta < 0 || beta > 1)
         return -1;
@@ -145,7 +151,7 @@ double Camera::cramers(Face* face, double* ray) {
 
     double gamma = ((m * g) - (n * h) + (o * i)) / z;
 
-    cout << "Gamma calculated: " << gamma << endl;
+    // cout << "Gamma calculated: " << gamma << endl;
     if(gamma < 0 || gamma > 1)
         return -1.0;
 
@@ -157,7 +163,7 @@ double Camera::cramers(Face* face, double* ray) {
     double t = ((((e * a) - (b * f)) * g) - (((d * a) - (c * f)) * h) 
                 + (((f * b) - (c * e)) * i) ) / z;
 
-    cout << "t calculated: " << t << endl;
+    // cout << "t calculated: " << t << endl;
 
     if(t <= 0) {
         return -1.0;
@@ -218,6 +224,8 @@ void Camera::read(ifstream& file) {
 
             token = strtok(NULL, " ");
             right = stod(token);
+
+            
             // for(int i = 0; i < 4; i++) {
             //     token = strtok(NULL, " ");
             //     bounds[i] = stod(token);
