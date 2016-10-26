@@ -16,38 +16,35 @@ Scene::Scene() {
 
 Scene::~Scene() {
     if(image != nullptr){
-        for(int i = 0; i < resX; i++)
+        for(int i = 0; i < height; i++)
             delete [] image[i];
         delete[] image;
     }
 }
 
 void Scene::allocateImage() {
-    image = new double* [resX];
-    for(int i = 0; i < resX; i++)
-        image[i] = new double [resY];
+    image = new double* [height];
+    for(int i = 0; i < height; i++)
+        image[i] = new double [width];
 }
 
 void Scene::genDistances(Camera* cam){
     double* res = cam->getRes();
-    resX = res[0];
-    resY = res[1];
+    width = res[0];
+    height = res[1];
     allocateImage();
     double dist = -1;
-    for(int x = 0; x < resX; x++){
-        for(int y = 0; y < resY; y++) {
-            // cout << "Throwing ray at (" << x << ", " << y << ")" << endl;
-            dist = cam->throwRay(x, y);
-            // cout << endl;
-            if(dist != -1){ // Don't set the minimum with the non-intersections
-                if(dist > 9000)
-                    cout << "This seems fishy (" << x << ", " << y << ")" << endl;
+
+    for(int row = 0; row < height; row++) {
+        for(int col = 0; col < width; col++) {
+            dist = cam->throwRay(row, col);
+            if(dist != -1) {
                 if(dist < tmin)
                     tmin = dist;
                 if (dist > tmax)
                     tmax = dist;
             }
-            image[y][x] = dist;
+            image[row][col] = dist;
         }
     }
 
@@ -66,11 +63,11 @@ void Scene::depthWrite(string filename) {
     ofstream outfile(filename);
 
     outfile << "P3" << endl;
-    outfile << resX << " " << resY << " 255" << endl;
+    outfile << width << " " << height << " 255" << endl;
 
     double* color;
-    for(int r = 0; r < resX; r++) {
-        for(int c = 0; c < resY; c++) {
+    for(int r = 0; r < height; r++) {
+        for(int c = 0; c < width; c++) {
             color = distToDepth(image[r][c]);
             outfile << (int)color[0] << " " << (int)color[1] << " " << (int)color[2] << " ";
             delete [] color;

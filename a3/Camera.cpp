@@ -11,6 +11,8 @@ using std::endl;
 using std::string;
 using std::stod;
 #include <cstring>
+#include <vector>
+using std::vector;
 
 Camera::Camera(string filename, Linear* inc_l, Model* inc_models, int inc_numModels) {
     l = inc_l;
@@ -35,7 +37,7 @@ void Camera::calcBasis() {
     wV = l->subtract(eye, look, 3);
     l->makeUnit(wV, 3);
 
-    uV = l->cross3(wV, up);
+    uV = l->cross3(up, wV);
     l->makeUnit(uV, 3);
 
     vV = l->cross3(wV, uV);
@@ -87,22 +89,34 @@ double Camera::calcIntersect(double* ray) {
     // store the distances
     Face* faces;
     int numFaces = -1;
-    double distance = -1;   
+    double distance = -1;
+    vector<double> distVect;
     for(int i = 0; i < numModels; i++) {
         numFaces = models[i].getNumFaces();
         faces = models[i].getFaces();
-
         for(int j = 0; j < numFaces; j++) {
             // cout << "Checking intersection with face " << j << ". . ." << endl;
             distance = cramers(&faces[j], ray);
             if(distance != -1) {
-                if(distance - d < 0)
-                    return -1;
-                return distance - d;
+                if(distance - d > 0)
+                    distVect.push_back(distance - d);
+                // if(distance - d < 0)
+                //     return -1;
+                // return distance - d;
             }
         }
     }
-    return -1;
+
+    if(distVect.size() == 0)
+        return -1;
+
+    double small = 9999999;
+    for(unsigned int i = 0; i < distVect.size(); i++) {
+        double curr = distVect[i];
+        if(curr < small)
+            small = curr;
+    }
+    return small;
 }
 
 // -1 if no intersect
@@ -119,7 +133,7 @@ double Camera::cramers(Face* face, double* ray) {
     double b = triangleA.getY() - triangleC.getY();
     double c = triangleA.getX() - triangleC.getX();
 
-    double d = triangleA.getX() - eye[0];
+    double d2 = triangleA.getX() - eye[0];
     double e = triangleA.getY() - eye[1];
     double f = triangleA.getZ() - eye[2];
 
@@ -137,7 +151,7 @@ double Camera::cramers(Face* face, double* ray) {
         return -1;
     }
 
-    double beta = ((j * d) - (k * e) + (l * f)) / z;
+    double beta = ((j * d2) - (k * e) + (l * f)) / z;
 
     // cout << "Beta calculated: " << beta << endl;
 
@@ -146,8 +160,8 @@ double Camera::cramers(Face* face, double* ray) {
     // calc gamma and check the values don't suck
     // mno
     double m = (f * ray[1]) - (e * ray[2]);
-    double n = (f * ray[0]) - (d * ray[2]);
-    double o = (e * ray[0]) - (d * ray[1]);
+    double n = (f * ray[0]) - (d2 * ray[2]);
+    double o = (e * ray[0]) - (d2 * ray[1]);
 
     double gamma = ((m * g) - (n * h) + (o * i)) / z;
 
@@ -156,16 +170,25 @@ double Camera::cramers(Face* face, double* ray) {
         return -1.0;
 
     if(beta + gamma > 1)
-        return -1.0;
+        return -1.0; 
 
     // then t
     // p q r
-    double t = ((((e * a) - (b * f)) * g) - (((d * a) - (c * f)) * h) 
+    double t = ((((e * a) - (b * f)) * g) - (((d2 * a) - (c * f)) * h) 
                 + (((f * b) - (c * e)) * i) ) / z;
+
+    if(t > 8000) {
+        cout << "t: " << t << ", z: " << z << endl;
+        cout << "beta: " << beta << ", gamma: " << gamma << endl;
+        cout << "p: " << ((e * a) - (b * f)) * g << endl;
+        cout << "e: " << e << ", a: " << a << ", (e*a): " << e*a << endl;
+        cout << "q: " << ((d2 * a) - (c * f)) * h << endl;
+        cout << "r: " << ((f * b) - (c * e)) * i << endl << endl;
+    }
 
     // cout << "t calculated: " << t << endl;
 
-    if(t <= 0) {
+    if(t < 0) {
         return -1.0;
     }
 

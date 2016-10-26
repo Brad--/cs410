@@ -21,8 +21,7 @@ private:
     double tmax;
 
     double** image;
-    int resX;
-    int resY;
+    int width, height;
     
 };
 
