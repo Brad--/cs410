@@ -99,13 +99,10 @@ double Camera::calcIntersect(double* ray) {
         faces = models[i].getFaces();
         for(int j = 0; j < numFaces; j++) {
             // cout << "Checking intersection with face " << j << ". . ." << endl;
-            distance = cramers(&faces[j], ray);
+            distance = cramers2(&faces[j], ray);
             if(distance != -1) {
                 if(distance - d > 0)
                     distVect.push_back(distance - d);
-                // if(distance - d < 0)
-                //     return -1;
-                // return distance - d;
             }
         }
     }
@@ -131,7 +128,7 @@ double Camera::cramers(Face* face, double* ray) {
 
     // calc beta
     // make sure beta is less than equal to 1, and greater than equal to zero
-    // abc def ghi jkl z for beta
+    // abc def ghi jkl z for betaLeft handed 
     double a = triangleA.getZ() - triangleC.getZ();
     double b = triangleA.getY() - triangleC.getY();
     double c = triangleA.getX() - triangleC.getX();
@@ -200,7 +197,7 @@ double Camera::cramers(Face* face, double* ray) {
     return t;
 }
 
-double Camera::cramers2(Face* face, double* l) {
+double Camera::cramers2(Face* face, double* dv) {
     Point* trianglePoints = face->getPoints();
     Point triangleA = trianglePoints[0];
     Point triangleB = trianglePoints[1];
@@ -218,38 +215,47 @@ double Camera::cramers2(Face* face, double* l) {
     double cy = triangleC.getY();
     double cz = triangleC.getZ();
 
-    double lx = l[0];
-    double ly = l[1];
-    double lz = l[2];
+    double lx = eye[0];
+    double ly = eye[1];
+    double lz = eye[2];
 
-    double dx = eye[0];
-    double dy = eye[1];
-    double dz = eye[2];
+    double dx = dv[0];
+    double dy = dv[1];
+    double dz = dv[2];
 
-    double denominator = (((az - cz) * dy - (ay - cy) * dz) * (ax - bx)) - (((az - cz) * dx - (ax - cx) * dz) * (ay - by))
-                            + (((ay - cy) * dx - (az - cz) * dy) * (az - bz));
+    double denominator = ((az - cz) * dy - (ay - cy) * dz) * (ax - bx) - ((az - cz) * dx - (ax - cx) * dz) * (ay - by)
+                            + ((ay - cy) * dx - (ax - cx) * dy) * (az - bz);
 
-    double beta = ((az - cz) * dy) - ((ay - cy) * dz) * (ax - lx) - ((az - cz) * dx - (ax - cx) * dz) * (ay - ly)
-                    + ((ay -cy) * dx - (ax - cx) * dy) * (az - lz);
-    beta = beta / denominator;
+    if(equals(denominator, 0.0) || denominator == 0)
+        return -1.0;
 
-    if(beta >= 0 && beta <= 1) {
-        double gamma = ((az - lz) * dy - (ay - ly) * dz) * (ax - bx) - ((az - lz) * dx - (ax - lx) * dz) * (ay - by)
-                        + ((ay - ly) * dx - (ax - lx) * dy) * (az - bz);
-        gamma = gamma / denominator;
+    double beta = ( ((az - cz) * dy - (ay - cy) * dz) * (ax - lx) - ((az - cz) * dx - (ax - cx) * dz) * (ay - ly)
+                    + ((ay - cy) * dx - (ax - cx) * dy) * (az - lz) ) / denominator;
 
-        if(gamma >- 0 && gamma <= 1) {
-            double t = ((ay - ly) * (az - cz) - (ay - cy) * (az - lz)) * (ax - bx) - ((ax - lx) * (az - cz) * (az - lz)) * (ay - by)
-                        + ((az - lz) * (ay - cy) - (ax - cx) * (ay - ly)) * (az -bz);
-            t = t / denominator;
-            if(t >= 0)
-                return t;
-        }
-    }
+    if(beta < 0 || beta > 1)
+        return -1;
 
-    return -1;
+    double gamma = ( ((az - lz) * dy - (ay - ly) * dz) * (ax - bx) - ((az - lz) * dx - (ax - lx) * dz) * (ay - by)
+                    + ((ay - ly) * dx - (ax - lx) * dy) * (az - bz) ) / denominator;
+
+    if(gamma < 0 || gamma > 1)
+        return -1.0;
+
+    if(beta + gamma > 1)
+        return -1.0; 
+    
+
+    double t = ( ((ay - ly) * (az - cz) - (ay - cy) * (az - lz)) * (ax - bx) - ((ax - lx) * (az - cz) - (ax - cx) * (az - lz)) * (ay - by)
+                + ((ax - lx) * (ay - cy) - (ax - cx) * (ay - ly)) * (az - bz) ) / denominator;
+
+    if(t < 0)
+        return -1.0;
+
+
+    return t;
 }
 
+// A la Stack Overflow: http://stackoverflow.com/questions/2411392/double-epsilon-for-equality-greater-than-less-than-less-than-or-equal-to-gre
 bool Camera::equals(double x, double y) {
     double epsilon = max(abs(x), abs(y)) * 1E-15;
     return abs(x - y) <= epsilon;
