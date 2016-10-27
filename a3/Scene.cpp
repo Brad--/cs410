@@ -55,7 +55,7 @@ void Scene::genDistances(Camera* cam){
     //     cout << endl;
     // }
 
-    cout << "tmin: " << tmin << ", tmax: " << tmax << endl;
+    // cout << "tmin: " << tmin << ", tmax: " << tmax << endl;
 }
 
 // Write out the image as relative depth in pgm format

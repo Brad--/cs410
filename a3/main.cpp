@@ -24,9 +24,9 @@ int main(int argc, char* argv[]) {
     Camera* camera = new Camera(argv[1], linear, models, numModels);
     Scene scene = Scene();
     scene.genDistances(camera);
-    cout << "Finished generating distances" << endl;
+    // cout << "Finished generating distances" << endl;
     scene.depthWrite(argv[argc - 1]);
-    cout << "Finished writing file" << endl;
+    // cout << "Finished writing file" << endl;
 
     delete [] models;
     delete linear;
