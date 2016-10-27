@@ -66,9 +66,9 @@ void Scene::depthWrite(string filename) {
     outfile << width << " " << height << " 255" << endl;
 
     double* color;
-    for(int r = 0; r < height; r++) {
+    for(int r = height - 1; r >= 0; r--) {
         for(int c = 0; c < width; c++) {
-            color = distToDepth(image[r][c]);
+            color = distToDepth(image[c][r]);
             outfile << (int)color[0] << " " << (int)color[1] << " " << (int)color[2] << " ";
             delete [] color;
         }

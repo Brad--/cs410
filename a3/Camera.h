@@ -16,12 +16,14 @@ public:
     ~Camera();
 
     double cramers(Face* face, double* ray);
+    double cramers2(Face* face, double* ray);
     double calcIntersect(double* ray);
     double throwRay(int x, int y);
 
     void read(std::ifstream& file);
     void printCamera();
     void calcBasis();
+    bool equals(double d1, double d2);
 
     inline double* getEye() {return eye;}
     inline double* getLook() {return look;}

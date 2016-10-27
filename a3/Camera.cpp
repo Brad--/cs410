@@ -13,6 +13,9 @@ using std::stod;
 #include <cstring>
 #include <vector>
 using std::vector;
+#include <algorithm>
+using std::max;
+using std::abs;
 
 Camera::Camera(string filename, Linear* inc_l, Model* inc_models, int inc_numModels) {
     l = inc_l;
@@ -52,7 +55,7 @@ double Camera::throwRay(int x, int y) {
     // cout << "px: " << px << ", py: " << py << endl;
 
     // wV
-    double* zAxis = l->scalar(wV, -1 * d, 3);
+    double* zAxis = l->scalar(wV, -d, 3);
     // uV
     double* xAxis = l->scalar(uV, px, 3);
     // vV
@@ -147,7 +150,7 @@ double Camera::cramers(Face* face, double* ray) {
 
     double z = (j * g) - (k * h) + (l * i);
 
-    if(z == 0) {
+    if(equals(z, 0.0)) {
         return -1;
     }
 
@@ -174,16 +177,18 @@ double Camera::cramers(Face* face, double* ray) {
 
     // then t
     // p q r
-    double t = ((((e * a) - (b * f)) * g) - (((d2 * a) - (c * f)) * h) 
-                + (((f * b) - (c * e)) * i) ) / z;
+    double p = ((e * a) - (b * f)) * g;
+    double q = ((d2 * a) - (c * f)) * h;
+    double r = ((f * b) - (c * e)) * i;
+    double t = (p - q + r) / z;
 
     if(t > 8000) {
         cout << "t: " << t << ", z: " << z << endl;
         cout << "beta: " << beta << ", gamma: " << gamma << endl;
-        cout << "p: " << ((e * a) - (b * f)) * g << endl;
-        cout << "e: " << e << ", a: " << a << ", (e*a): " << e*a << endl;
-        cout << "q: " << ((d2 * a) - (c * f)) * h << endl;
-        cout << "r: " << ((f * b) - (c * e)) * i << endl << endl;
+        cout << "p: " << p << endl;
+        cout << "e: " << e << ", a: " << a << ", (e*a): " << e*a << ", g: " << g << endl;
+        cout << "q: " << q << endl;
+        cout << "r: " << r << endl << endl;
     }
 
     // cout << "t calculated: " << t << endl;
@@ -193,6 +198,61 @@ double Camera::cramers(Face* face, double* ray) {
     }
 
     return t;
+}
+
+double Camera::cramers2(Face* face, double* l) {
+    Point* trianglePoints = face->getPoints();
+    Point triangleA = trianglePoints[0];
+    Point triangleB = trianglePoints[1];
+    Point triangleC = trianglePoints[2];
+
+    double ax = triangleA.getX();
+    double ay = triangleA.getY();
+    double az = triangleA.getZ();
+
+    double bx = triangleB.getX();
+    double by = triangleB.getY();
+    double bz = triangleB.getZ();
+
+    double cx = triangleC.getX();
+    double cy = triangleC.getY();
+    double cz = triangleC.getZ();
+
+    double lx = l[0];
+    double ly = l[1];
+    double lz = l[2];
+
+    double dx = eye[0];
+    double dy = eye[1];
+    double dz = eye[2];
+
+    double denominator = (((az - cz) * dy - (ay - cy) * dz) * (ax - bx)) - (((az - cz) * dx - (ax - cx) * dz) * (ay - by))
+                            + (((ay - cy) * dx - (az - cz) * dy) * (az - bz));
+
+    double beta = ((az - cz) * dy) - ((ay - cy) * dz) * (ax - lx) - ((az - cz) * dx - (ax - cx) * dz) * (ay - ly)
+                    + ((ay -cy) * dx - (ax - cx) * dy) * (az - lz);
+    beta = beta / denominator;
+
+    if(beta >= 0 && beta <= 1) {
+        double gamma = ((az - lz) * dy - (ay - ly) * dz) * (ax - bx) - ((az - lz) * dx - (ax - lx) * dz) * (ay - by)
+                        + ((ay - ly) * dx - (ax - lx) * dy) * (az - bz);
+        gamma = gamma / denominator;
+
+        if(gamma >- 0 && gamma <= 1) {
+            double t = ((ay - ly) * (az - cz) - (ay - cy) * (az - lz)) * (ax - bx) - ((ax - lx) * (az - cz) * (az - lz)) * (ay - by)
+                        + ((az - lz) * (ay - cy) - (ax - cx) * (ay - ly)) * (az -bz);
+            t = t / denominator;
+            if(t >= 0)
+                return t;
+        }
+    }
+
+    return -1;
+}
+
+bool Camera::equals(double x, double y) {
+    double epsilon = max(abs(x), abs(y)) * 1E-15;
+    return abs(x - y) <= epsilon;
 }
 
 void Camera::read(ifstream& file) {
@@ -247,12 +307,6 @@ void Camera::read(ifstream& file) {
 
             token = strtok(NULL, " ");
             right = stod(token);
-
-            
-            // for(int i = 0; i < 4; i++) {
-            //     token = strtok(NULL, " ");
-            //     bounds[i] = stod(token);
-            // }
         }
         else if (strcmp(token, "res") == 0) {
             for(int i = 0; i < 2; i++) {
