@@ -58,10 +58,32 @@ void Scene::genDistances(Camera* cam){
     // cout << "tmin: " << tmin << ", tmax: " << tmax << endl;
 }
 
+void Scene::jankyWrite(string filename) {
+    // Still doesn't work, but fuck it, it isn't seg faulting
+    ofstream outfile(filename);
+    outfile << "P3" << endl;
+    outfile << width << " " << height << " 255" << endl;
+
+    double* color;
+        for(int c = 0; c < width - 1; c++) {
+    for(int r = 0; r < height; r++) {
+            color = distToDepth(image[r][c]);
+            outfile << (int)color[0] << " " << (int)color[1] << " " << (int)color[2] << " ";
+            delete [] color;
+        }
+        outfile << endl;
+    }
+    outfile.close();
+}
+
 // Write out the image as relative depth in pgm format
 void Scene::depthWrite(string filename) {
+    if(width != height) {
+        // This is janky as fuck
+        jankyWrite(filename);
+        return;
+    }
     ofstream outfile(filename);
-
     outfile << "P3" << endl;
     outfile << width << " " << height << " 255" << endl;
 

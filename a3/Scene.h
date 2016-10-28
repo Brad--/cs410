@@ -11,6 +11,7 @@ public:
 
     void genDistances(Camera * cam);
     void depthWrite(std::string filename);
+    void jankyWrite(std::string filename);
 
     double* distToDepth(double d);
 private:

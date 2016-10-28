@@ -13,6 +13,7 @@ using std::endl;
 int main(int argc, char* argv[]) {
     if(argc < 4) {
         cout << "Usage: raytracer <CAMERA_MODEL> <PLY_MODEL(S)> <OUTFILE_NAME>" << endl;
+        return 0;
     }
     
     int numModels = argc - 3;
@@ -31,7 +32,6 @@ int main(int argc, char* argv[]) {
     delete [] models;
     delete linear;
     delete camera;
-
 	return 0;
 }
 
