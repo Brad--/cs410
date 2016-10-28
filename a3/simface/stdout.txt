@@ -1,0 +1,4 @@
+> raytracer simfacecam.txt simface.ply simface.ppm
+Target resolution: 32 by 32
+Polygon count: 2
+Depth t runs from 5.00021 to 5.04661
