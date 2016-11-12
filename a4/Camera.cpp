@@ -20,29 +20,39 @@ using std::abs;
 Camera::Camera() {
 }
 
+Camera::Camera(Linear* inc_l) {
+    l = inc_l;
+    numModels = 0;
+}
+
 Camera::Camera(Linear* inc_l, Model* inc_models, int inc_numModels) {
     l = inc_l;
-    models = inc_models;
+    // models = inc_models;
     numModels = inc_numModels;
 }
 
 Camera::Camera(string filename, Linear* inc_l, Model* inc_models, int inc_numModels) {
-    l = inc_l;
-    models = inc_models;
-    numModels = inc_numModels;
+    // l = inc_l;
+    // models = inc_models;
+    // numModels = inc_numModels;
 
-    char cFilename [256];
-    std::strcpy(cFilename, filename.c_str());
+    // char cFilename [256];
+    // std::strcpy(cFilename, filename.c_str());
 
-    ifstream file(cFilename);
-    read(file);
-    calcBasis();
+    // ifstream file(cFilename);
+    // read(file);
+    // calcBasis();
 }
 
 Camera::~Camera() { 
-    delete [] uV;
-    delete [] vV;
-    delete [] wV;
+    // delete [] uV;
+    // delete [] vV;
+    // delete [] wV;
+}
+
+void Camera::addModel(Model* m) {
+    models.push_back(m);
+    numModels++;
 }
 
 void Camera::calcBasis() {
@@ -104,8 +114,8 @@ double Camera::calcIntersect(double* ray) {
     double distance = -1;
     vector<double> distVect;
     for(int i = 0; i < numModels; i++) {
-        numFaces = models[i].getNumFaces();
-        faces = models[i].getFaces();
+        numFaces = models[i]->getNumFaces();
+        faces = models[i]->getFaces();
         for(int j = 0; j < numFaces; j++) {
             // cout << "Checking intersection with face " << j << ". . ." << endl;
             distance = cramers2(&faces[j], ray);
@@ -325,6 +335,9 @@ ifstream& Camera::read(ifstream& file) {
                 token = strtok(NULL, " ");
                 res[i] = stod(token);
             }
+            // This is pretty hacky, but it returns the file when it's done reading the last value so that the scene
+            //  gets to start where it should
+            return file;
         }
         else {
             done = true;

@@ -2,13 +2,17 @@
 #define SCENE_H_INCLUDE
 
 #include "Camera.h"
+#include "Light.h"
+#include "Sphere.h"
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <vector>
+using std::vector;
 
 class Scene{
 public:
-    Scene(string filename, Linear* inc_l, Model* inc_models, int inc_numModels);
+    Scene(string filename, Linear* inc_l);
     ~Scene();
 
     void genDistances();
@@ -16,12 +20,18 @@ public:
     void jankyWrite(std::string filename);
     void read(std::ifstream& file);
 
+    void printScene();
+
     double* distToDepth(double d);
 private:
 
     void allocateImage();
 
     Camera cam;
+
+    double ambient[3];
+    vector<Light> lights;
+    vector<Sphere> spheres;
 
     // Maximum and Minimum distance in the scene
     double tmin;

@@ -5,7 +5,8 @@
 using std::ifstream;
 #include <string>
 using std::string;
-
+#include <vector>
+using std::vector;
 #include <fstream>
 
 #include "Linear.h"
@@ -15,6 +16,7 @@ class Camera {
 public:
     Camera(string filename, Linear* inc_l, Model* models, int numModels);
     Camera(Linear* inc_l, Model* inc_models, int inc_numModels);
+    Camera(Linear* inc_l);
     Camera();
     ~Camera();
 
@@ -26,6 +28,7 @@ public:
     ifstream& read(ifstream& file);
     void printCamera();
     void calcBasis();
+    void addModel(Model* m);
     bool equals(double d1, double d2);
 
     inline double* getEye() {return eye;}
@@ -48,7 +51,7 @@ private:
 
     double left, btm, right, top, d, numModels;
     Linear* l;
-    Model* models;
+    vector<Model*> models;
 };
 
 #endif

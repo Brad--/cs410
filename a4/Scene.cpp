@@ -3,6 +3,7 @@
 #include <cstring>
 #include <string>
 using std::string;  
+using std::stod;
 #include <algorithm>
 using std::max;
 #include <iostream>
@@ -10,11 +11,12 @@ using std::cout;
 using std::endl;
 using std::ofstream;
 
-Scene::Scene(string filename, Linear* inc_l, Model* inc_models, int inc_num_models) { 
+
+Scene::Scene(string filename, Linear* inc_l) { 
     tmin = 999999;
     tmax = -2;
 
-    cam = Camera(inc_l, inc_models, inc_num_models);
+    cam = Camera(inc_l);
 
     char cFilename [256];
     std::strcpy(cFilename, filename.c_str());
@@ -22,6 +24,8 @@ Scene::Scene(string filename, Linear* inc_l, Model* inc_models, int inc_num_mode
     ifstream file(cFilename);
     cam.read(file);
     cam.calcBasis();
+
+    read(file);
 }
 
 Scene::~Scene() {
@@ -111,7 +115,89 @@ void Scene::depthWrite(string filename) {
 }
 
 void Scene::read(ifstream& file) {
-    
+    if (file.fail()) {
+        file.clear();
+        cout << "Scene read is dead, RIP" << endl;
+        return;
+    }
+    string curr;
+    char* token;
+    char* currChars;
+
+    while(!file.eof()) {
+        getline(file, curr);
+        currChars = const_cast<char*>(curr.c_str());
+        token = strtok(currChars, " ");
+
+        if (strcmp(token, "ambient") == 0) {
+            for(int i = 0; i < 3; i++) {
+                token = strtok(NULL, " ");
+                ambient[i] = stod(token);
+            }
+        }
+        else if (strcmp(token, "light") == 0) {
+            Point point;
+            token = strtok(NULL, " ");
+            point.setX(stod(token));
+            token = strtok(NULL, " ");
+            point.setY(stod(token));
+            token = strtok(NULL, " ");
+            point.setZ(stod(token));
+            token = strtok(NULL, " ");
+            double w = stod(token);
+            Point color;
+            token = strtok(NULL, " ");
+            color.setX(stod(token));
+            token = strtok(NULL, " ");
+            color.setY(stod(token));
+            token = strtok(NULL, " ");
+            color.setZ(stod(token));
+
+            Light light = Light(point, color);
+            light.setW(w);
+            lights.push_back(light);
+        }
+        else if (strcmp(token, "sphere") == 0) {
+            Point loc;
+            token = strtok(NULL, " ");
+            loc.setX(stod(token));
+            token = strtok(NULL, " ");
+            loc.setY(stod(token));
+            token = strtok(NULL, " ");
+            loc.setZ(stod(token));
+            token = strtok(NULL, " ");
+            double rad = stod(token);
+            Point col;
+            token = strtok(NULL, " ");
+            col.setX(stod(token));
+            token = strtok(NULL, " ");
+            col.setY(stod(token));
+            token = strtok(NULL, " ");
+            col.setZ(stod(token));
+
+            Sphere sphere = Sphere(loc, rad, col);
+            spheres.push_back(sphere);
+        }
+        else if (strcmp(token, "model") == 0) {
+            double translation[3];
+            token = strtok(NULL, " ");
+            translation[0] = stod(token);
+            token = strtok(NULL, " ");
+            translation[1] = stod(token);
+            token = strtok(NULL, " ");
+            translation[2] = stod(token);
+            // throwing away the rotation values
+            for(int i = 0; i < 4; i++)
+                token = strtok(NULL, " ");
+            token = strtok(NULL, " ");
+            string filename = token;
+
+            // Yet to create the model / add it to the camera's list of models
+        }
+        else {
+            // Do nothing
+        }
+    }
 }
 
 double* Scene::distToDepth(double d) {
@@ -135,4 +221,15 @@ double* Scene::distToDepth(double d) {
     color[1] = 255 - (int)color[0] - (int)color[2]; // g
 
     return color;
+}
+
+void Scene::printScene() {
+    cout << "Camera:" << endl;
+    cam.printCamera();
+    cout << endl;
+    cout << "Ambient Light: " << ambient[0] << ", " << ambient[1] << ", " << ambient[2] << endl;
+    for(unsigned int i = 0; i < lights.size(); i++) {
+        cout << "Light " << i << ": ";
+        lights[i].printLight();
+    } 
 }

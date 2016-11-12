@@ -219,6 +219,12 @@ void Model::normalize() {
     whiten();
 }
 
+void Model::translate(double x, double y, double z) {
+    for(int i = 0; i < numPoints; i++) {
+        points[i].translate(x, y, z);
+    }
+}
+
 void Model::printPoints() {
     double tempX, tempY, tempZ;
     for(int i = 0; i < numPoints; i++) {
