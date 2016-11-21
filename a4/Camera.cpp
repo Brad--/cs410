@@ -25,25 +25,6 @@ Camera::Camera(Linear* inc_l) {
     numModels = 0;
 }
 
-Camera::Camera(Linear* inc_l, Model* inc_models, int inc_numModels) {
-    l = inc_l;
-    // models = inc_models;
-    numModels = inc_numModels;
-}
-
-Camera::Camera(string filename, Linear* inc_l, Model* inc_models, int inc_numModels) {
-    // l = inc_l;
-    // models = inc_models;
-    // numModels = inc_numModels;
-
-    // char cFilename [256];
-    // std::strcpy(cFilename, filename.c_str());
-
-    // ifstream file(cFilename);
-    // read(file);
-    // calcBasis();
-}
-
 Camera::~Camera() { 
     // delete [] uV;
     // delete [] vV;
@@ -109,7 +90,7 @@ double Camera::throwRay(int x, int y) {
 // Cramer's formula on all the faces
 double Camera::calcIntersect(double* ray) {
     // store the distances
-    Face* faces;
+    vector<Face> faces;
     int numFaces = -1;
     double distance = -1;
     vector<double> distVect;
@@ -138,86 +119,8 @@ double Camera::calcIntersect(double* ray) {
     return small;
 }
 
-// -1 if no intersect
-double Camera::cramers(Face* face, double* ray) {
-    Point* trianglePoints = face->getPoints();
-    Point triangleA = trianglePoints[0];
-    Point triangleB = trianglePoints[1];
-    Point triangleC = trianglePoints[2];
-
-    // calc beta
-    // make sure beta is less than equal to 1, and greater than equal to zero
-    // abc def ghi jkl z for betaLeft handed 
-    double a = triangleA.getZ() - triangleC.getZ();
-    double b = triangleA.getY() - triangleC.getY();
-    double c = triangleA.getX() - triangleC.getX();
-
-    double d2 = triangleA.getX() - eye[0];
-    double e = triangleA.getY() - eye[1];
-    double f = triangleA.getZ() - eye[2];
-
-    double g = triangleA.getX() - triangleB.getX();
-    double h = triangleA.getY() - triangleB.getY();
-    double i = triangleA.getZ() - triangleB.getZ();
-
-    double j = (a * ray[1]) - (b * ray[2]);
-    double k = (a * ray[0]) - (c * ray[2]);
-    double l = (b * ray[0]) - (c * ray[1]);
-
-    double z = (j * g) - (k * h) + (l * i);
-
-    if(equals(z, 0.0)) {
-        return -1;
-    }
-
-    double beta = ((j * d2) - (k * e) + (l * f)) / z;
-
-    // cout << "Beta calculated: " << beta << endl;
-
-    if(beta < 0 || beta > 1)
-        return -1;
-    // calc gamma and check the values don't suck
-    // mno
-    double m = (f * ray[1]) - (e * ray[2]);
-    double n = (f * ray[0]) - (d2 * ray[2]);
-    double o = (e * ray[0]) - (d2 * ray[1]);
-
-    double gamma = ((m * g) - (n * h) + (o * i)) / z;
-
-    // cout << "Gamma calculated: " << gamma << endl;
-    if(gamma < 0 || gamma > 1)
-        return -1.0;
-
-    if(beta + gamma > 1)
-        return -1.0; 
-
-    // then t
-    // p q r
-    double p = ((e * a) - (b * f)) * g;
-    double q = ((d2 * a) - (c * f)) * h;
-    double r = ((f * b) - (c * e)) * i;
-    double t = (p - q + r) / z;
-
-    if(t > 8000) {
-        cout << "t: " << t << ", z: " << z << endl;
-        cout << "beta: " << beta << ", gamma: " << gamma << endl;
-        cout << "p: " << p << endl;
-        cout << "e: " << e << ", a: " << a << ", (e*a): " << e*a << ", g: " << g << endl;
-        cout << "q: " << q << endl;
-        cout << "r: " << r << endl << endl;
-    }
-
-    // cout << "t calculated: " << t << endl;
-
-    if(t < 0) {
-        return -1.0;
-    }
-
-    return t;
-}
-
 double Camera::cramers2(Face* face, double* dv) {
-    Point* trianglePoints = face->getPoints();
+    vector<Point> trianglePoints = face->getPoints();
     Point triangleA = trianglePoints[0];
     Point triangleB = trianglePoints[1];
     Point triangleC = trianglePoints[2];

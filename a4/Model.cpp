@@ -16,19 +16,7 @@ Model::Model(string filename) {
     init(filename);
 }
 
-Model::~Model() {
-    if(points != nullptr) {
-        // for(int i = 0; i < numPoints; i++)
-        //     delete points[i];
-        delete [] points;
-    }
-    if(faces != nullptr){
-        // for(int i = 0; i < numFaces; i++)
-        //     delete faces[i];
-        delete [] faces;
-    }
-
-}
+Model::~Model() {  }
 
 void Model::init(string filename) {
     char cFilename [256];
@@ -37,113 +25,74 @@ void Model::init(string filename) {
     ifstream file(cFilename);
     read(file);
 }
-
-// Reads .ply file and stores appropriate information
-// !!! Does not currently store property list !!!
 bool Model::read(ifstream& file) {
     if (file.fail()) {
         file.clear();
         return false;
     }
 
-    string headerTemp;
     string curr;
     char *token;
     char *currChars;
 
-    // Note for future me: strtok returns a single token from a string based on 
-    //  delimiter, so 'token' is a char*, not a char* array
-
-    // Ghetto string.contains()
-    while(curr.find("end_header") == std::string::npos) {
+    while(!file.eof()) {
         getline(file, curr);
-        headerTemp += curr;
-
-        // Convert string into non const char*
         currChars = const_cast<char*>(curr.c_str());
         token = strtok(currChars, " ");
 
-        // Don't append extra newline after end_header
-        if(curr.find("end_header") == std::string::npos) 
-            headerTemp += "\n";
+        if(token[0] != '#' && curr.find("/") != std::string::npos) {
+            // Read vertex line
+            if(strcmp(token, "v") == 0) {
+                Point tempPoint = Point();
 
-        if(strcmp(token, "element") == 0) {
-            // The strtok NULL thing reads the next token in the string for some reason
-            token = strtok(NULL, " ");
+                token = strtok(NULL, " ");
+                tempPoint.setX(stod(token));
+                token = strtok(NULL, " ");
+                tempPoint.setY(stod(token));
+                token = strtok(NULL, " ");
+                tempPoint.setZ(stod(token));
 
-            if(strcmp(token, "vertex") == 0) {
+                points.push_back(tempPoint);
+            }
+            // Read texture coordinate
+            if(strcmp(token, "vt") == 0) {
+                // do nothing
+            }
+            // Read surface normal (Not necessarily unit)
+            if(strcmp(token, "vn") == 0) {
+
+            }
+            // Read parameter space vertices (idk what that means)
+            if(strcmp(token, "vp") == 0) {
+                // do nothings
+            }
+            // Read face element (also don't know this)
+            if(strcmp(token, "f") == 0) {
+                Face tempFace = Face();
+                vector<Point> facePoints;
+                int pointPos = -1;
+
                 token = strtok(NULL, " ");
-                numPoints = stoi(token);
-            } else if(strcmp(token, "face") == 0) {
+                pointPos = stoi(token);
+                facePoints.push_back(points[pointPos]);
+
                 token = strtok(NULL, " ");
-                numFaces = stoi(token);
+                pointPos = stoi(token);
+                facePoints.push_back(points[pointPos]);
+
+                token = strtok(NULL, " ");
+                pointPos = stoi(token);
+                facePoints.push_back(points[pointPos]);
+
+                faces.push_back(tempFace);
             }
         }
     }
-    header = headerTemp;
 
-    // points = (Point*)malloc(sizeof(Point) * numPoints);
-    points = new Point[numPoints];
-    faces  = new Face [numFaces];
-    for(int i = 0; i < numPoints; i++) {
-        double tempX, tempY, tempZ;
-
-        getline(file, curr);
-        currChars = const_cast<char*>(curr.c_str());
-
-        token = strtok(currChars, " ");
-        tempX = stod(token);
-        token = strtok(NULL, " ");
-        tempY = stod(token);
-        token = strtok(NULL, " ");
-        tempZ = stod(token);
-
-        points[i] = Point(tempX, tempY, tempZ);
-        // cout << "X: " << tempX << " Y: " << tempY << " Z: " << tempZ << endl;
-    } // Done reading Points
-
-    int numPointsOnFace = 0;
-    for(int currFace = 0; currFace < numFaces; currFace++) {
-        getline(file, curr);
-        currChars = const_cast<char*>(curr.c_str());
-        token = strtok(currChars, " ");
-
-        numPointsOnFace = stoi(token);
-        Point* facePoints = new Point[numPointsOnFace];
-        for(int i = 0; i < numPointsOnFace; i++) {
-            token = strtok(NULL, " ");
-            facePoints[i] = points[stoi(token)];
-        }
-        faces[currFace].init(numPointsOnFace, facePoints);
-    } // Done reading Faces
-
-    // Debuggin'
-    // cout << "Begin Faces:\n" << faces << endl;
-    // cout << "Point0: " << points[0].getX() << endl;
-    // cout << "Header w/o elements: " << headerTemp << endl;
-    // cout << "Points: " << numPoints << endl;
-    // for(int i = 0; i < numFaces; i++) {
-    //     faces[i].print();
-    // }
-
-    file.close();
     return true;
 }
 
 bool Model::write(string filename, string ext) const {
-    string fileTop = filename.substr(0, filename.size() - 4);
-    // const char *cFilename = (fileTop + ext + ".ply").c_str();
-    std::ofstream outfile;
-    outfile.open(fileTop + ext + ".ply");
-
-    outfile << header << endl;
-
-    for(int i = 0; i < numPoints; i++) {
-        outfile << points[i].getX() << " " << points[i].getY() << " " << points[i].getZ() << endl;
-    }
-
-    // outfile << faces;
-    outfile.close();
 
     return true;
 }
@@ -153,7 +102,7 @@ Point Model::avgPoint() const {
     double avgY = 0.0;
     double avgZ = 0.0;
 
-    for(int i = 0; i < numPoints; i++) {
+    for(unsigned int i = 0; i < points.size(); i++) {
         avgX += points[i].getX();
         avgY += points[i].getY();
         avgZ += points[i].getZ();
@@ -173,7 +122,7 @@ Point Model::stdDev() const {
     double devZ = 0.0;
 
     // Calculate sum of squares
-    for(int i = 0; i < numPoints; i++) {
+    for(unsigned int i = 0; i < points.size(); i++) {
         devX += pow((points[i].getX() - mean.getX()), 2);
         devY += pow((points[i].getY() - mean.getY()), 2);
         devZ += pow((points[i].getZ() - mean.getZ()), 2);
@@ -195,7 +144,7 @@ Point Model::stdDev() const {
 void Model::center() {
     Point meanPoint = avgPoint();
     Point *currPoint;
-    for(int i = 0; i < numPoints; i++) {
+    for(unsigned int i = 0; i < points.size(); i++) {
         currPoint = &points[i];
         currPoint->setX(currPoint->getX() - meanPoint.getX());
         currPoint->setY(currPoint->getY() - meanPoint.getY());
@@ -206,7 +155,7 @@ void Model::center() {
 void Model::whiten() {
     Point stdDevPoint = stdDev();
     Point *currPoint;
-    for(int i = 0; i < numPoints; i++) {
+    for(unsigned int i = 0; i < points.size(); i++) {
         currPoint = &points[i];
         currPoint->setX(currPoint->getX() / stdDevPoint.getX());
         currPoint->setY(currPoint->getY() / stdDevPoint.getY());

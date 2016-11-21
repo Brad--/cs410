@@ -20,7 +20,6 @@ public:
     Camera();
     ~Camera();
 
-    double cramers(Face* face, double* ray);
     double cramers2(Face* face, double* ray);
     double calcIntersect(double* ray);
     double throwRay(int x, int y);

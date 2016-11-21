@@ -7,6 +7,9 @@ using std::string;
 
 #include <iostream>
 
+#include <vector>
+using std::vector;
+
 #include "Point.h"
 #include "Face.h"
 
@@ -16,8 +19,8 @@ public:
     Model() {};
     ~Model();
 
-    inline Point* getPoints() const {return points;}
-    inline Face* getFaces() const {return faces;}
+    inline vector<Point> getPoints() const {return points;}
+    inline vector<Face> getFaces() const {return faces;}
     inline double getNumFaces() const {return numFaces;}
 
     bool  read(std::ifstream& file);
@@ -37,8 +40,8 @@ public:
 private:
     int numPoints, numFaces;
 
-    Point* points;
-    Face* faces;
+    vector<Point> points;
+    vector<Face> faces;
     string header;
 };
 

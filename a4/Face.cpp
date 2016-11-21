@@ -15,14 +15,8 @@ Face::~Face() {
     // }
     // if(normal != nullptr)
     //     delete [] normal;
-    delete points;
+    // delete points;
     delete normal;
-}
-
-void Face::init(int u_numPoints, Point* u_points) {
-    numPoints = u_numPoints;
-    points = u_points;
-    calcNormal();
 }
 
 void Face::calcNormal() {

@@ -189,8 +189,14 @@ void Scene::read(ifstream& file) {
             // throwing away the rotation values
             for(int i = 0; i < 4; i++)
                 token = strtok(NULL, " ");
+
             token = strtok(NULL, " ");
             string filename = token;
+            Model m = Model();
+            ifstream file (filename);
+            m.read(file);
+            m.translate(translation[0], translation[1], translation[2]);
+            cam.addModel(&m);
 
             // Yet to create the model / add it to the camera's list of models
         }
