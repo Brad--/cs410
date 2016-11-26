@@ -13,6 +13,9 @@ public:
     inline double getY() {return loc.getY();}
     inline double getZ() {return loc.getZ();}
 
+    inline Point getLoc() {return loc;}
+    inline Point getColor() {return color;}
+
     inline double getR() {return color.getX();}
     inline double getG() {return color.getY();}
     inline double getB() {return color.getZ();}

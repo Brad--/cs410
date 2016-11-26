@@ -12,6 +12,7 @@ using std::vector;
 
 #include "Point.h"
 #include "Face.h"
+#include "Material.h"
 
 class Model {
 public:
@@ -23,7 +24,7 @@ public:
     inline vector<Face> getFaces() const {return faces;}
     inline double getNumFaces() const {return numFaces;}
 
-    bool  read(std::ifstream& file);
+    bool  read(std::ifstream& file, vector<Material> m);
     bool  write(string filename, string ext) const;
     void  init(string filename);
     void  addPoint(Point point);
@@ -42,6 +43,7 @@ private:
 
     vector<Point> points;
     vector<Face> faces;
+    vector<Material> materials;
     string header;
 };
 

@@ -4,6 +4,7 @@
 #include "Camera.h"
 #include "Light.h"
 #include "Sphere.h"
+#include "Material.h"
 #include <string>
 #include <iostream>
 #include <fstream>
@@ -19,6 +20,7 @@ public:
     void depthWrite(std::string filename);
     void jankyWrite(std::string filename);
     void read(std::ifstream& file);
+    void readMat(std::ifstream& file);
 
     void printScene();
 
@@ -32,6 +34,7 @@ private:
     double ambient[3];
     vector<Light> lights;
     vector<Sphere> spheres;
+    vector<Material> materials;
 
     // Maximum and Minimum distance in the scene
     double tmin;

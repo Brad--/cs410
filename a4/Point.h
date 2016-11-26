@@ -9,6 +9,8 @@ public:
     inline double getY() const {return y;}
     inline double getZ() const {return z;}
 
+    double* subtract(Point& p);
+
     void setX(double u_x);
     void setY(double u_y);
     void setZ(double u_z);

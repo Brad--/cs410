@@ -120,6 +120,7 @@ void Scene::read(ifstream& file) {
         cout << "Scene read is dead, RIP" << endl;
         return;
     }
+    string matFilename;
     string curr;
     char* token;
     char* currChars;
@@ -175,8 +176,9 @@ void Scene::read(ifstream& file) {
             token = strtok(NULL, " ");
             col.setZ(stod(token));
 
-            Sphere sphere = Sphere(loc, rad, col);
-            spheres.push_back(sphere);
+            Sphere* sphere = new Sphere(loc, rad, col);
+            // spheres.push_back(sphere);
+            cam.addSphere(sphere);
         }
         else if (strcmp(token, "model") == 0) {
             double translation[3];
@@ -192,16 +194,71 @@ void Scene::read(ifstream& file) {
 
             token = strtok(NULL, " ");
             string filename = token;
-            Model m = Model();
+            Model *m = new Model();
             ifstream file (filename);
-            m.read(file);
-            m.translate(translation[0], translation[1], translation[2]);
-            cam.addModel(&m);
+            m->read(file, materials);
+            m->translate(translation[0], translation[1], translation[2]);
+            cam.addModel(m);
+        }
+        else if (strcmp(token, "mtllib") == 0) {
+            token = strtok(NULL, " ");
+            ifstream matfile(token);
 
-            // Yet to create the model / add it to the camera's list of models
+            readMat(matfile);
         }
         else {
             // Do nothing
+        }
+    }
+    
+}
+
+void Scene::readMat(ifstream& file) {
+    if(file.fail()){
+        file.clear();
+        cout << "Matfile is RIP" << endl;
+        return;
+    }
+
+    string matFilename;
+    string curr;
+    char* token;
+    char* currChars;
+
+    while(!file.eof()) {
+        getline(file, curr);
+        currChars = const_cast<char*>(curr.c_str());
+        token = strtok(currChars, " ");
+        Material material;
+
+        if (strcmp(token, "newmtl") == 0) {
+            token = strtok(NULL, " ");
+            material = Material(token);
+        }
+        else if (strcmp(token, "Kd") == 0) {
+            double r,g,b;
+            token = strtok(NULL, " ");
+            r = stod(token);
+            token = strtok(NULL, " ");
+            g = stod(token);
+            token = strtok(NULL, " ");
+            b = stod(token);
+            material.setDiffuse(r, g, b);
+        } 
+        else if (strcmp(token, "Ks") == 0) {
+            double r,g,b;
+            token = strtok(NULL, " ");
+            r = stod(token);
+            token = strtok(NULL, " ");
+            g = stod(token);
+            token = strtok(NULL, " ");
+            b = stod(token);
+
+            material.setSpecular(r, g, b);
+            materials.push_back(material);
+        }
+        else {
+            // do nothing
         }
     }
 }

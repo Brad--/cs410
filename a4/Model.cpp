@@ -23,17 +23,19 @@ void Model::init(string filename) {
     std::strcpy(cFilename, filename.c_str());
 
     ifstream file(cFilename);
-    read(file);
+    read(file, materials);
 }
-bool Model::read(ifstream& file) {
+bool Model::read(ifstream& file, vector<Material> m) {
     if (file.fail()) {
         file.clear();
         return false;
     }
+    materials = m;
 
     string curr;
     char *token;
     char *currChars;
+    int matCount = 0;
 
     while(!file.eof()) {
         getline(file, curr);
@@ -85,6 +87,16 @@ bool Model::read(ifstream& file) {
                 facePoints.push_back(points[pointPos]);
 
                 faces.push_back(tempFace);
+            }
+            if(strcmp(token, "usemtl") == 0) {
+                if(matCount != 0){
+                    materials[matCount].setEnd(faces.size());
+                    matCount++;
+                }
+                int begin = faces.size();
+                if(begin > 0)
+                    begin += 1;
+                materials[matCount].setBegin(faces.size());
             }
         }
     }

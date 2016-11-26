@@ -11,6 +11,7 @@ using std::vector;
 
 #include "Linear.h"
 #include "Model.h"
+#include "Sphere.h"
 
 class Camera {
 public:
@@ -19,23 +20,25 @@ public:
     Camera(Linear* inc_l);
     Camera();
     ~Camera();
-
+    
     double cramers2(Face* face, double* ray);
     double calcIntersect(double* ray);
+    double calcSphereIntersect(double* ray);
     double throwRay(int x, int y);
 
     ifstream& read(ifstream& file);
     void printCamera();
     void calcBasis();
-    void addModel(Model* m);
     bool equals(double d1, double d2);
 
+    inline void addModel(Model* m) {models.push_back(m);}
+    inline void addSphere(Sphere* s) {spheres.push_back(s);}
     inline double* getEye() {return eye;}
-    inline double* getLook() {return look;}
-    inline double* getUp() {return up;}
-    // inline double* getBounds() {return bounds;}
+    inline double* getLook(){return look;}
+    inline double* getUp()  {return up;}
     inline double* getRes() {return res;}
-    inline double  getD() {return d;}
+    inline double  getD()   {return d;}
+    // inline double* getBounds() {return bounds;}
 
 private:
 
@@ -51,6 +54,8 @@ private:
     double left, btm, right, top, d, numModels;
     Linear* l;
     vector<Model*> models;
+    vector<Sphere*> spheres;
+    vector<Material*> materials;
 };
 
 #endif

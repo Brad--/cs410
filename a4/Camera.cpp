@@ -16,6 +16,7 @@ using std::vector;
 #include <algorithm>
 using std::max;
 using std::abs;
+using std::pow;
 
 Camera::Camera() {
 }
@@ -31,28 +32,23 @@ Camera::~Camera() {
     // delete [] wV;
 }
 
-void Camera::addModel(Model* m) {
-    models.push_back(m);
-    numModels++;
-}
-
 void Camera::calcBasis() {
     wV = l->subtract(eye, look, 3);
     l->makeUnit(wV, 3);
 
     uV = l->cross3(up, wV);
+    if(uV[0] == 0 && uV[1] == 0 && uV[2] == 0)
+        uV[0] = 1;
     l->makeUnit(uV, 3);
 
     vV = l->cross3(wV, uV);
 }
 
 // Should throw 0 or something that isn't -1 because -1 causes an error as defined by me
-// This is leaking like a madman, write a class for vectors ya dingus
 // Returns -1 if no intersection, and distance of the intersection if the intersection exists
 double Camera::throwRay(int x, int y) {
     double px = x / (res[0] - 1) * (right - left) + left;
     double py = y / (res[1] - 1) * (top - btm) + btm;
-    // cout << "px: " << px << ", py: " << py << endl;
 
     // wV
     double* zAxis = l->scalar(wV, -d, 3);
@@ -66,10 +62,25 @@ double Camera::throwRay(int x, int y) {
     double* pixpt = l->add(temp, temp2, 3);
     double* ray = l->subtract(pixpt, eye, 3);
 
-    // cout << "Ray calculated: [" << ray[0] << ", " << ray[1] << ", " << ray[2] << "]" << endl;
+    // cout << "zAxis: [" << zAxis[0] << ", " << zAxis[1] << ", " << zAxis[2] << "]" << endl;
+    // cout << "xAxis: [" << xAxis[0] << ", " << xAxis[1] << ", " << xAxis[2] << "]" << endl;
+    // cout << "yAxis: [" << yAxis[0] << ", " << yAxis[1] << ", " << yAxis[2] << "]" << endl;
+
+    // cout << "temp: [" << temp[0] << ", " << temp[1] << ", " << temp[2] << "]" << endl;
+    // cout << "temp2: [" << temp2[0] << ", " << temp2[1] << ", " << temp2[2] << "]" << endl;
+
+    // cout << "Ray passed in: [" << ray[0] << ", " << ray[1] << ", " << ray[2] << "]" << endl;
+
     l->makeUnit(ray, 3);
-    // cout << "Ray calculated: [" << ray[0] << ", " << ray[1] << ", " << ray[2] << "]" << endl;
-    double distance = calcIntersect(ray);
+
+    double distance = calcSphereIntersect(ray);
+    if(distance == -1) {
+        distance = calcIntersect(ray);
+    }
+    else {
+        // for debugging
+        cout << "Sphere intersect" << endl;
+    }
 
     // cout << "Distance calculated: " << distance << endl;
 
@@ -91,13 +102,15 @@ double Camera::throwRay(int x, int y) {
 double Camera::calcIntersect(double* ray) {
     // store the distances
     vector<Face> faces;
-    int numFaces = -1;
-    double distance = -1;
+    double distance;
     vector<double> distVect;
-    for(int i = 0; i < numModels; i++) {
-        numFaces = models[i]->getNumFaces();
+
+    for(unsigned int i = 0; i < models.size(); i++) {
+        distance = -1;
         faces = models[i]->getFaces();
-        for(int j = 0; j < numFaces; j++) {
+
+        if(distance == -1)
+        for(unsigned int j = 0; j < faces.size(); j++) {
             // cout << "Checking intersection with face " << j << ". . ." << endl;
             distance = cramers2(&faces[j], ray);
             if(distance != -1) {
@@ -116,6 +129,82 @@ double Camera::calcIntersect(double* ray) {
         if(curr < small)
             small = curr;
     }
+    return small;
+}
+
+double Camera::calcSphereIntersect(double* ray) {
+    vector<double> distVect;
+    vector<int> spherePos;
+    // I have to do this because my architecture is a mess and I procrastinated too long to refactor
+    Point eyePoint = Point(eye[0], eye[1], eye[2]);
+    // cout << "Ray: [" << ray[0] << ", " << ray[1] << ", " << ray[2] << "]" << endl; 
+
+
+    for(unsigned int i = 0; i < spheres.size(); i++) {
+        Sphere* sphere = spheres[i];
+
+        double* cVect = sphere->getLoc().subtract(eyePoint);
+        double c = l->vLength(cVect, 3);
+
+        // cout << "C: [" << cVect[0] << ", " << cVect[1] << ", " << cVect[2] << "]" << endl;
+        // cout << "c: " << c << endl;
+
+        //Project c onto ray
+        // v = (c * ray / ray * ray) * ray
+        double top = l->dot(cVect, &*ray, 3);
+        // double bot = l->dot(&*ray, &*ray, 3);
+        double bot = l->vLength(&*ray, 3);
+        double* vVect = l->scalar(&*ray, (top / bot), 3);
+        double v = l->vLength(vVect, 3);
+
+        double rs = pow(sphere->getRadius(), 2);
+        double cs = pow(c, 2);
+        double vs = pow(v, 2);
+
+        // cout << "r: " << sphere->getRadius() << endl;
+        // cout << "rs: " << rs << endl;
+        // cout << "cs: " << cs << endl;
+        // cout << "vs: " << vs << endl;
+
+        double ds = rs - (cs - vs);
+        cout << "d squared: " << ds << endl;
+
+        // Calculate distance of intersection
+        if(ds >= 0){
+            // cout << "D doesn't suck" << endl;
+            //Q = E + (v-d)R
+            double* temp = l->scalar(&*ray, (v - d), 3);
+            double* qPoint = l->add(eye, temp, 3);
+            double* qVect = l->subtract(qPoint, eye, 3);
+            double distance = l->vLength(qVect, 3);
+
+            if(distance > 0) {
+                distVect.push_back(distance);
+                spherePos.push_back((int)i);
+            } 
+
+            delete [] temp;
+            delete [] qVect;
+            delete [] qPoint;
+        }
+
+        delete [] vVect;
+        delete [] cVect;
+    }
+
+    if(distVect.size() == 0)
+        return -1;
+    
+    double small = 9999999;
+    int pos;
+    for(unsigned int i = 0; i < distVect.size(); i++) {
+        double curr = distVect[i];
+        if(curr < small){
+            small = curr;
+            pos = i;
+        }
+    } 
+    // pos should be the position in the sphere vector of the sphere. Do color stuff!
     return small;
 }
 
