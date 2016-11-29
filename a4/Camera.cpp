@@ -13,10 +13,11 @@ using std::stod;
 #include <cstring>
 #include <vector>
 using std::vector;
-#include <algorithm>
-using std::max;
-using std::abs;
-using std::pow;
+//#include <algorithm>
+#include <math.h>
+//using std::max;
+//using std::abs;
+//using std::pow;
 
 Camera::Camera() {
 }
@@ -456,7 +457,10 @@ double* Camera::calcSphereColor(int position, double* intersect) {
 
 // A la Stack Overflow: http://stackoverflow.com/questions/2411392/double-epsilon-for-equality-greater-than-less-than-less-than-or-equal-to-gre
 bool Camera::equals(double x, double y) {
-    double epsilon = max(abs(x), abs(y)) * 1E-15;
+    double temp = 0;
+    if(abs(x) > abs(y)) temp = abs(x);
+    else temp = abs(y);
+    double epsilon = temp * 1E-15;
     return abs(x - y) <= epsilon;
 }
 
