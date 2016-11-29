@@ -32,6 +32,12 @@ bool Model::read(ifstream& file, vector<Material> m) {
     }
     materials = m;
 
+    Linear l = Linear();
+
+    faces.reserve(2500);
+    points.reserve(3000);
+    normals.reserve(3000);
+
     string curr;
     char *token;
     char *currChars;
@@ -42,18 +48,18 @@ bool Model::read(ifstream& file, vector<Material> m) {
         currChars = const_cast<char*>(curr.c_str());
         token = strtok(currChars, " ");
 
-        if(token[0] != '#' && curr.find("/") != std::string::npos) {
+        // if(token[0] != '#' && curr.find("/") != std::string::npos) {
+        if(token != nullptr && token[0] != '#') {
             // Read vertex line
             if(strcmp(token, "v") == 0) {
-                Point tempPoint = Point();
+                token = strtok(NULL, " ");
+                double tx = stod(token);
+                token = strtok(NULL, " ");
+                double ty = stod(token);
+                token = strtok(NULL, " ");
+                double tz = stod(token);
 
-                token = strtok(NULL, " ");
-                tempPoint.setX(stod(token));
-                token = strtok(NULL, " ");
-                tempPoint.setY(stod(token));
-                token = strtok(NULL, " ");
-                tempPoint.setZ(stod(token));
-
+                Point* tempPoint = new Point(tx, ty, tz);
                 points.push_back(tempPoint);
             }
             // Read texture coordinate
@@ -62,7 +68,27 @@ bool Model::read(ifstream& file, vector<Material> m) {
             }
             // Read surface normal (Not necessarily unit)
             if(strcmp(token, "vn") == 0) {
+                double tx, ty, tz;
 
+                token = strtok(NULL, " ");
+                tx = stod(token);
+                token = strtok(NULL, " ");
+                ty = stod(token);
+                token = strtok(NULL, " ");
+                tz = stod(token);
+
+                Point* tempPoint = new Point(tx, ty, tz);
+                double* tp = new double[3];
+                tp[0] = tempPoint->getX();
+                tp[1] = tempPoint->getY();
+                tp[2] = tempPoint->getZ();
+                l.makeUnit(&(*tp), 3);
+
+                tempPoint->setX(tp[0]);
+                tempPoint->setY(tp[1]);
+                tempPoint->setZ(tp[2]);
+
+                normals.push_back(tempPoint);
             }
             // Read parameter space vertices (idk what that means)
             if(strcmp(token, "vp") == 0) {
@@ -70,22 +96,28 @@ bool Model::read(ifstream& file, vector<Material> m) {
             }
             // Read face element (also don't know this)
             if(strcmp(token, "f") == 0) {
-                Face tempFace = Face();
-                vector<Point> facePoints;
-                int pointPos = -1;
+                Face* tempFace = new Face();
+                vector<Point*> facePoints;
+                int tx, ty, tz;
 
                 token = strtok(NULL, " ");
-                pointPos = stoi(token);
-                facePoints.push_back(points[pointPos]);
-
+                tx = stoi(token);
                 token = strtok(NULL, " ");
-                pointPos = stoi(token);
-                facePoints.push_back(points[pointPos]);
-
+                ty = stoi(token);
                 token = strtok(NULL, " ");
-                pointPos = stoi(token);
-                facePoints.push_back(points[pointPos]);
+                tz = stoi(token);
 
+                facePoints.push_back(points[tx - 1]);
+                facePoints.push_back(points[ty - 1]);
+                facePoints.push_back(points[tz - 1]);
+
+                // cout << faces.size() << endl;
+                // for(int i = 0; i < 3; i++) {
+                //     facePoints[0]->print();
+                // }
+
+                tempFace->setPoints(facePoints);
+                
                 faces.push_back(tempFace);
             }
             if(strcmp(token, "usemtl") == 0) {
@@ -96,7 +128,7 @@ bool Model::read(ifstream& file, vector<Material> m) {
                 int begin = faces.size();
                 if(begin > 0)
                     begin += 1;
-                materials[matCount].setBegin(faces.size());
+                // materials[matCount].setBegin(faces.size());
             }
         }
     }
@@ -115,9 +147,9 @@ Point Model::avgPoint() const {
     double avgZ = 0.0;
 
     for(unsigned int i = 0; i < points.size(); i++) {
-        avgX += points[i].getX();
-        avgY += points[i].getY();
-        avgZ += points[i].getZ();
+        avgX += points[i]->getX();
+        avgY += points[i]->getY();
+        avgZ += points[i]->getZ();
     }
 
     avgX /= numPoints;
@@ -135,9 +167,9 @@ Point Model::stdDev() const {
 
     // Calculate sum of squares
     for(unsigned int i = 0; i < points.size(); i++) {
-        devX += pow((points[i].getX() - mean.getX()), 2);
-        devY += pow((points[i].getY() - mean.getY()), 2);
-        devZ += pow((points[i].getZ() - mean.getZ()), 2);
+        devX += pow((points[i]->getX() - mean.getX()), 2);
+        devY += pow((points[i]->getY() - mean.getY()), 2);
+        devZ += pow((points[i]->getZ() - mean.getZ()), 2);
     }
 
     // Variance
@@ -157,7 +189,7 @@ void Model::center() {
     Point meanPoint = avgPoint();
     Point *currPoint;
     for(unsigned int i = 0; i < points.size(); i++) {
-        currPoint = &points[i];
+        currPoint = points[i];
         currPoint->setX(currPoint->getX() - meanPoint.getX());
         currPoint->setY(currPoint->getY() - meanPoint.getY());
         currPoint->setZ(currPoint->getZ() - meanPoint.getZ());
@@ -168,7 +200,7 @@ void Model::whiten() {
     Point stdDevPoint = stdDev();
     Point *currPoint;
     for(unsigned int i = 0; i < points.size(); i++) {
-        currPoint = &points[i];
+        currPoint = points[i];
         currPoint->setX(currPoint->getX() / stdDevPoint.getX());
         currPoint->setY(currPoint->getY() / stdDevPoint.getY());
         currPoint->setZ(currPoint->getZ() / stdDevPoint.getZ());
@@ -181,17 +213,17 @@ void Model::normalize() {
 }
 
 void Model::translate(double x, double y, double z) {
-    for(int i = 0; i < numPoints; i++) {
-        points[i].translate(x, y, z);
+    for(unsigned int i = 0; i < points.size(); i++) {
+        points[i]->translate(x, y, z);
     }
 }
 
 void Model::printPoints() {
     double tempX, tempY, tempZ;
-    for(int i = 0; i < numPoints; i++) {
-        tempX = points[i].getX();
-        tempY = points[i].getY();
-        tempZ = points[i].getZ();
+    for(unsigned int i = 0; i < points.size(); i++) {
+        tempX = points[i]->getX();
+        tempY = points[i]->getY();
+        tempZ = points[i]->getZ();
         cout << i << ":\t" << tempX << "\t" << tempY << "\t" << tempZ << endl;
     }
 }
@@ -205,10 +237,10 @@ void Model::printBoundingBox() {
     double minZ = 999999.0;
 
     double tempX, tempY, tempZ;
-    for(int i = 0; i < numPoints; i++) {
-        tempX = points[i].getX();
-        tempY = points[i].getY();
-        tempZ = points[i].getZ();
+    for(unsigned int i = 0; i < points.size(); i++) {
+        tempX = points[i]->getX();
+        tempY = points[i]->getY();
+        tempZ = points[i]->getZ();
 
         if(tempX > maxX) 
             maxX = tempX;

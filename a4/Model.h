@@ -13,15 +13,16 @@ using std::vector;
 #include "Point.h"
 #include "Face.h"
 #include "Material.h"
+#include "Linear.h"
 
 class Model {
 public:
     Model(string filename);
-    Model() {};
+    inline Model() {};
     ~Model();
 
-    inline vector<Point> getPoints() const {return points;}
-    inline vector<Face> getFaces() const {return faces;}
+    inline vector<Point*> getPoints() const {return points;}
+    inline vector<Face*> getFaces() const {return faces;}
     inline double getNumFaces() const {return numFaces;}
 
     bool  read(std::ifstream& file, vector<Material> m);
@@ -38,11 +39,12 @@ public:
     void printPoints();
     void printBoundingBox();
     void printAll();
+    vector<Point*> normals;
 private:
     int numPoints, numFaces;
 
-    vector<Point> points;
-    vector<Face> faces;
+    vector<Point*> points;
+    vector<Face*> faces;
     vector<Material> materials;
     string header;
 };

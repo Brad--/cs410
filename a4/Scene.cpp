@@ -40,6 +40,7 @@ void Scene::allocateImage() {
     image = new double* [height];
     for(int i = 0; i < height; i++)
         image[i] = new double [width];
+    colors.reserve(height * width);
 }
 
 void Scene::genDistances(){
@@ -47,18 +48,22 @@ void Scene::genDistances(){
     width = res[0];
     height = res[1];
     allocateImage();
-    double dist = -1;
+    // double dist = -1;
+    double* color;
+    double* black = new double[3];
+    black[0] = 0; black[1] = 0; black[2] = 0;
 
     for(int row = 0; row < height; row++) {
         for(int col = 0; col < width; col++) {
-            dist = cam.throwRay(row, col);
-            if(dist != -1) {
-                if(dist < tmin)
-                    tmin = dist;
-                if (dist > tmax)
-                    tmax = dist;
+            color = cam.throwRay(row, col);
+            if(color[0] == -1){
+                image[row][col] = -1;
+                colors.push_back(black);
             }
-            image[row][col] = dist;
+            else {
+                image[row][col] = colors.size();
+                colors.push_back(color);
+            }
         }
     }
 
@@ -79,15 +84,10 @@ void Scene::jankyWrite(string filename) {
     outfile << width << " " << height << " 255" << endl;
 
     double* color;
-    for(int r = 0; r < height; r++) {
-        for(int c = 0; c < width - 1; c++) {
-            color = distToDepth(image[r][c]);
-            outfile << (int)color[0] << " " << (int)color[1] << " " << (int)color[2] << " ";
-            delete [] color;
-        }
-        outfile << endl;
+    for(unsigned int i = 0; i < colors.size(); i++) {
+        color = colors[i];
+        outfile << (int)color[0] << " " << (int)color[1] << " " << (int)color[2] << " ";
     }
-    outfile.close();
 }
 
 // Write out the image as relative depth in pgm format
@@ -104,7 +104,7 @@ void Scene::depthWrite(string filename) {
     double* color;
     for(int r = height - 1; r >= 0; r--) {
         for(int c = 0; c < width; c++) {
-            color = distToDepth(image[c][r]);
+            // color = getColor(image[c][r]);
             outfile << (int)color[0] << " " << (int)color[1] << " " << (int)color[2] << " ";
             delete [] color;
         }
@@ -129,85 +129,87 @@ void Scene::read(ifstream& file) {
         getline(file, curr);
         currChars = const_cast<char*>(curr.c_str());
         token = strtok(currChars, " ");
-
-        if (strcmp(token, "ambient") == 0) {
-            for(int i = 0; i < 3; i++) {
-                token = strtok(NULL, " ");
-                ambient[i] = stod(token);
+        if(token != nullptr){
+            if (strcmp(token, "ambient") == 0) {
+                for(int i = 0; i < 3; i++) {
+                    token = strtok(NULL, " ");
+                    ambient[i] = stod(token);
+                }
+                cam.setAmbient(ambient[0], ambient[1], ambient[2]);
             }
-        }
-        else if (strcmp(token, "light") == 0) {
-            Point point;
-            token = strtok(NULL, " ");
-            point.setX(stod(token));
-            token = strtok(NULL, " ");
-            point.setY(stod(token));
-            token = strtok(NULL, " ");
-            point.setZ(stod(token));
-            token = strtok(NULL, " ");
-            double w = stod(token);
-            Point color;
-            token = strtok(NULL, " ");
-            color.setX(stod(token));
-            token = strtok(NULL, " ");
-            color.setY(stod(token));
-            token = strtok(NULL, " ");
-            color.setZ(stod(token));
-
-            Light light = Light(point, color);
-            light.setW(w);
-            lights.push_back(light);
-        }
-        else if (strcmp(token, "sphere") == 0) {
-            Point loc;
-            token = strtok(NULL, " ");
-            loc.setX(stod(token));
-            token = strtok(NULL, " ");
-            loc.setY(stod(token));
-            token = strtok(NULL, " ");
-            loc.setZ(stod(token));
-            token = strtok(NULL, " ");
-            double rad = stod(token);
-            Point col;
-            token = strtok(NULL, " ");
-            col.setX(stod(token));
-            token = strtok(NULL, " ");
-            col.setY(stod(token));
-            token = strtok(NULL, " ");
-            col.setZ(stod(token));
-
-            Sphere* sphere = new Sphere(loc, rad, col);
-            // spheres.push_back(sphere);
-            cam.addSphere(sphere);
-        }
-        else if (strcmp(token, "model") == 0) {
-            double translation[3];
-            token = strtok(NULL, " ");
-            translation[0] = stod(token);
-            token = strtok(NULL, " ");
-            translation[1] = stod(token);
-            token = strtok(NULL, " ");
-            translation[2] = stod(token);
-            // throwing away the rotation values
-            for(int i = 0; i < 4; i++)
+            else if (strcmp(token, "light") == 0) {
+                Point point;
                 token = strtok(NULL, " ");
+                point.setX(stod(token));
+                token = strtok(NULL, " ");
+                point.setY(stod(token));
+                token = strtok(NULL, " ");
+                point.setZ(stod(token));
+                token = strtok(NULL, " ");
+                double w = stod(token);
+                Point color;
+                token = strtok(NULL, " ");
+                color.setX(stod(token));
+                token = strtok(NULL, " ");
+                color.setY(stod(token));
+                token = strtok(NULL, " ");
+                color.setZ(stod(token));
 
-            token = strtok(NULL, " ");
-            string filename = token;
-            Model *m = new Model();
-            ifstream file (filename);
-            m->read(file, materials);
-            m->translate(translation[0], translation[1], translation[2]);
-            cam.addModel(m);
-        }
-        else if (strcmp(token, "mtllib") == 0) {
-            token = strtok(NULL, " ");
-            ifstream matfile(token);
+                Light* light = new Light(point, color);
+                light->setW(w);
+                // lights.push_back(light);
+                cam.addLight(light);
+            }
+            else if (strcmp(token, "sphere") == 0) {
+                Point loc;
+                token = strtok(NULL, " ");
+                loc.setX(stod(token));
+                token = strtok(NULL, " ");
+                loc.setY(stod(token));
+                token = strtok(NULL, " ");
+                loc.setZ(stod(token));
+                token = strtok(NULL, " ");
+                double rad = stod(token);
+                Point col;
+                token = strtok(NULL, " ");
+                col.setX(stod(token));
+                token = strtok(NULL, " ");
+                col.setY(stod(token));
+                token = strtok(NULL, " ");
+                col.setZ(stod(token));
 
-            readMat(matfile);
-        }
-        else {
-            // Do nothing
+                Sphere* sphere = new Sphere(loc, rad, col);
+                cam.addSphere(sphere);
+            }
+            else if (strcmp(token, "model") == 0) {
+                double translation[3];
+                token = strtok(NULL, " ");
+                translation[0] = stod(token);
+                token = strtok(NULL, " ");
+                translation[1] = stod(token);
+                token = strtok(NULL, " ");
+                translation[2] = stod(token);
+                // throwing away the rotation values
+                for(int i = 0; i < 4; i++)
+                    token = strtok(NULL, " ");
+
+                token = strtok(NULL, " ");
+                string filename = token;
+                Model *m = new Model();
+                ifstream file (filename);
+                m->read(file, materials);
+                m->translate(translation[0], translation[1], translation[2]);    
+                cam.addModel(m);
+            }
+            else if (strcmp(token, "mtllib") == 0) {
+                // token = strtok(NULL, " ");
+                // ifstream matfile(token);
+
+                // readMat(matfile);
+            }
+            else {
+                // Do nothing
+            }
         }
     }
     
@@ -261,6 +263,33 @@ void Scene::readMat(ifstream& file) {
             // do nothing
         }
     }
+}
+
+double* Scene::getColor(double pos) {
+    double* color = new double[3];
+    if(pos == -1) {
+        color[0] = 0;
+        color[1] = 0;
+        color[2] = 0;
+    }
+    else {
+        double* curr = colors[pos];
+        color[0] = 255 * curr[0];
+        color[1] = 255 * curr[1];
+        color[2] = 255 * curr[2];
+        // cout << "Color: " << color[0] << ", " << color[1] << ", " << color[2] << endl;
+    }
+
+    for(int i = 0; i < 3; i++) {
+        if(color[i] > 255) {
+            color[i] = 255;
+        }
+        if(color[i] < 0) {
+            color[i] = 0;
+        }
+    }
+
+    return color;
 }
 
 double* Scene::distToDepth(double d) {

@@ -20,7 +20,8 @@ int main(int argc, char* argv[]) {
     Scene scene = Scene(argv[1], &linear);
     scene.genDistances();
     // // cout << "Finished generating distances" << endl;
-    scene.depthWrite(argv[2]);
+    scene.jankyWrite(argv[2]); 
+    // scene.depthWrite(argv[2]);
     // // cout << "Finished writing file" << endl;
 
 	return 0;

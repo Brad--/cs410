@@ -13,12 +13,12 @@ public:
     void calcNormal();
     void print();
     inline double* getNormal() {return normal;}
-    inline vector<Point> getPoints() {return points;}
-    inline void setPoints(vector<Point> u_points) { points = u_points; }
+    inline vector<Point*> getPoints() {return points;}
+    inline void setPoints(vector<Point*> u_points) { points = u_points; }
     
 private:
     int numPoints;
-    vector<Point> points;
+    vector<Point*> points;
     double* normal;
 };
 #endif

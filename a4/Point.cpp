@@ -4,6 +4,10 @@
 using std::endl;
 using std::cout;
 
+Point::Point() {
+    
+}
+
 Point::Point(double u_x, double u_y, double u_z) {
     x = u_x;
     y = u_y;

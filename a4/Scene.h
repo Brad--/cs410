@@ -24,6 +24,7 @@ public:
 
     void printScene();
 
+    double* getColor(double pos);
     double* distToDepth(double d);
 private:
 
@@ -41,6 +42,7 @@ private:
     double tmax;
 
     double** image;
+    vector<double*> colors;
     int width, height;
 };
 

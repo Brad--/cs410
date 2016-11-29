@@ -11,6 +11,8 @@ public:
     void setup(Point p, Point c);
     void printLight();
 
+    inline Point getPoint(){return point;}
+
     inline double getX(){return point.getX();}
     inline double getY(){return point.getY();}
     inline double getZ(){return point.getZ();}

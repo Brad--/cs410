@@ -2,8 +2,8 @@
 #define POINT_H_INCLUDE
 class Point {
 public:
+    Point();
     Point(double x, double y, double z);
-    inline Point() {x = 0.0; y = 0.0; z = 0.0;}
 
     inline double getX() const {return x;}
     inline double getY() const {return y;}
