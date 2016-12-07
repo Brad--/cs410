@@ -1,5 +1,5 @@
 CC=g++
-FLAGS=-I. -Wall -g -O2 -std=c++11
+FLAGS=-I. -Wall -g -Ofast -std=c++11
 FILES=main.o Model.o Point.o Camera.o Scene.o Linear.o Face.o Light.o Sphere.o Material.o
 TAR=a4.tar
 EXE=raytracer
@@ -28,4 +28,4 @@ Material.o: Material.cpp
 clean:
 	rm -f *.o $(TAR) $(EXE) *rounded.ply *centered.ply *.ppm
 tar:
-	tar -cf $(TAR) *.cpp *.h README* Makefile
+	tar -cf $(TAR) *.cpp *.h README* Makefile *.txt avo*

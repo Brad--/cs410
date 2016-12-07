@@ -1,9 +1,9 @@
-eye 1 4 -4
+eye 0 5 3
 look 0 0 0
 up 0 1 0
 d 2
 bounds -1 -1 1 1
 res 256 256
 ambient 0.2 0.2 0.2
-light 1 4 -5 1 0.50 0.1 0.1
+light 1 5 -5 1 0.50 0.1 0.1
 model 0.0 0.0 0.0 1.0 0.0 0.0 0.0 avocado.obj

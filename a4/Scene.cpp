@@ -53,7 +53,7 @@ void Scene::genDistances(){
     double* black = new double[3];
     black[0] = 0; black[1] = 0; black[2] = 0;
 
-    for(int row = 0; row < height; row++) {
+    for(int row = height - 1; row >= 0; row--) {
         for(int col = 0; col < width; col++) {
             color = cam.throwRay(row, col);
             if(color[0] == -1){
@@ -78,7 +78,6 @@ void Scene::genDistances(){
 }
 
 void Scene::jankyWrite(string filename) {
-    // Still doesn't work, but fuck it, it isn't seg faulting
     ofstream outfile(filename);
     outfile << "P3" << endl;
     outfile << width << " " << height << " 255" << endl;

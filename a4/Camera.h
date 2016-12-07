@@ -25,13 +25,13 @@ public:
     
     double cramers2(Face* face, double* ray);
     double* calcIntersect(double* ray);
-    double* calcSphereIntersect(double* ray);
+    double* calcSphereIntersect(double* ray, double* pixpt);
     double* throwRay(int x, int y);
 
-    double* calcSphereColor(int position, double* intersect);
+    double* calcSphereColor(int position, double* intersect, double* pixpt);
     double* calcFaceColor(int position);
     double* diffuseReflection(double* normal, double* color, double* intersect);
-    double* specularReflection(double* normal, double* intersect);
+    double* specularReflection(double* normal, double* intersect, double* pixpt);
 
     ifstream& read(ifstream& file);
     void printCamera();

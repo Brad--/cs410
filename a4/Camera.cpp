@@ -13,11 +13,11 @@ using std::stod;
 #include <cstring>
 #include <vector>
 using std::vector;
-//#include <algorithm>
+// #include <algorithm>
 #include <math.h>
 //using std::max;
-//using std::abs;
-//using std::pow;
+// using std::abs;
+// using std::pow;
 
 Camera::Camera() {
 }
@@ -48,7 +48,7 @@ void Camera::calcBasis() {
 
 // Should throw 0 or something that isn't -1 because -1 causes an error as defined by me
 // Returns -1 if no intersection, and distance of the intersection if the intersection exists
-double* Camera::throwRay(int x, int y) {
+double* Camera::throwRay(int y, int x) {
     intersects.clear();
     intersects.reserve(3000);
 
@@ -57,6 +57,7 @@ double* Camera::throwRay(int x, int y) {
     double px = x / (res[0] - 1) * (right - left) + left;
     double py = y / (res[1] - 1) * (top - btm) + btm;
 
+    // cout << "px: " << px << endl << "py: " << py << endl;
     // wV
     double* zAxis = l->scalar(wV, -d, 3);
     // uV
@@ -69,18 +70,12 @@ double* Camera::throwRay(int x, int y) {
     double* pixpt = l->add(temp, temp2, 3);
     double* ray = l->subtract(pixpt, eye, 3);
 
-    // cout << "zAxis: [" << zAxis[0] << ", " << zAxis[1] << ", " << zAxis[2] << "]" << endl;
-    // cout << "xAxis: [" << xAxis[0] << ", " << xAxis[1] << ", " << xAxis[2] << "]" << endl;
-    // cout << "yAxis: [" << yAxis[0] << ", " << yAxis[1] << ", " << yAxis[2] << "]" << endl;
-
-    // cout << "temp: [" << temp[0] << ", " << temp[1] << ", " << temp[2] << "]" << endl;
-    // cout << "temp2: [" << temp2[0] << ", " << temp2[1] << ", " << temp2[2] << "]" << endl;
-
-    // cout << "Ray passed in: [" << ray[0] << ", " << ray[1] << ", " << ray[2] << "]" << endl;
-
     l->makeUnit(ray, 3);
 
-    double* distance = calcSphereIntersect(ray);
+    // cout << "Ray Direction: " << ray[0] << ", " << ray[1] << ", " << ray[2] << endl;
+    // cout << "Pixpt: " << pixpt[0] << ", " << pixpt[1] << ", " << pixpt[2] << endl;
+
+    double* distance = calcSphereIntersect(ray, pixpt);
     if(distance[0] == -1) {
         distance = calcIntersect(ray);
     }
@@ -102,47 +97,46 @@ double* Camera::throwRay(int x, int y) {
 
 // Cramer's formula on all the faces
 double* Camera::calcIntersect(double* ray) {
-    // store the distances
-    vector<Face*> faces;
-    double distance;
-    vector<double> distVect;
-    vector<double> facePos;
+    // // store the distances
+    // vector<Face*> faces;
+    // double distance;
+    // vector<double> distVect;
+    // vector<double> facePos;
     double* none = new double[3];
     none[0] = -1; none[1] = -1; none[2] = -1;
+    return none;
 
-    for(unsigned int i = 0; i < models.size(); i++) {
-        distance = -1;
-        faces = models[i]->getFaces();
+    // for(unsigned int i = 0; i < models.size(); i++) {
+    //     distance = -1;
+    //     faces = models[i]->getFaces();
 
-        if(distance == -1)
-        for(unsigned int j = 0; j < faces.size(); j++) {
-            // faces[j]->print();
-            // cout << j << endl;
-            distance = cramers2(faces[j], ray);
-            if(distance != -1) {
-                if(distance - d > 0){
-                    distVect.push_back(distance - d);
-                    facePos.push_back((int) i);
-                }
-            }
-        }
-    }
+    //     if(distance == -1)
+    //     for(unsigned int j = 0; j < faces.size(); j++) {
+    //         distance = cramers2(faces[j], ray);
+    //         if(distance != -1) {
+    //             if(distance - d > 0){
+    //                 distVect.push_back(distance - d);
+    //                 facePos.push_back((int) i);
+    //             }
+    //         }
+    //     }
+    // }
 
-    if(distVect.size() == 0)
-        return none;
+    // if(distVect.size() == 0)
+    //     return none;
 
-    double small = 9999999;
-    int pos = -1;
-    for(unsigned int i = 0; i < distVect.size(); i++) {
-        double curr = distVect[i];
-        if(curr < small){
-            small = curr;
-            pos = i;
-        }
-    }
+    // double small = 9999999;
+    // int pos = -1;
+    // for(unsigned int i = 0; i < distVect.size(); i++) {
+    //     double curr = distVect[i];
+    //     if(curr < small){
+    //         small = curr;
+    //         pos = i;
+    //     }
+    // }
 
-    double* color = calcFaceColor(pos);
-    return color;
+    // double* color = calcFaceColor(pos);
+    // return color;
 }
 
 double* Camera::calcFaceColor(int position) {
@@ -175,8 +169,8 @@ double* Camera::calcFaceColor(int position) {
     double* diffuseReflect = diffuseReflection(normal, ctemp, intersect);
     // double diffuseReflect[3] = {0,0,0};
 
-    double* specularReflect = specularReflection(normal, intersect);
-    // double specularReflect[3] = {0,0,0};
+    // double* specularReflect = specularReflection(normal, intersect);
+    double specularReflect[3] = {0,0,0};
 
     // cout << "DifRef: " << diffuseReflect[0] << ", " << diffuseReflect[1] << ", " << diffuseReflect[2] << endl;
     // cout << "SpecRef: " << specularReflect[0] << ", " << specularReflect[1] << ", " << specularReflect[2] << endl;
@@ -198,11 +192,11 @@ double* Camera::calcFaceColor(int position) {
     return result;
 }
 
-double* Camera::calcSphereIntersect(double* ray) {
+double* Camera::calcSphereIntersect(double* ray, double* pixpt) {
     vector<double> distVect;
     vector<int> spherePos;
     // I have to do this because my architecture is a mess and I procrastinated too long to refactor
-    Point eyePoint = Point(eye[0], eye[1], eye[2]);
+    Point eyePoint = Point(pixpt[0], pixpt[1], pixpt[2]);
     double* qPoint;
     double* none = new double[3];
     none[0] = -1; none[1] = -1; none[2] = -1;
@@ -212,10 +206,7 @@ double* Camera::calcSphereIntersect(double* ray) {
         Sphere* sphere = spheres[i];
 
         double* cVect = sphere->getLoc().subtract(eyePoint);
-        double c = l->vLength(cVect, 3);
-
-        // cout << "C: [" << cVect[0] << ", " << cVect[1] << ", " << cVect[2] << "]" << endl;
-        // cout << "c: " << c << endl;
+        // double c = l->vLength(cVect, 3);
 
         //Project c onto ray
         // v = (c * ray / ray * ray) * ray
@@ -223,11 +214,15 @@ double* Camera::calcSphereIntersect(double* ray) {
         // double bot = l->dot(&*ray, &*ray, 3);
         double bot = l->vLength(&*ray, 3);
         double* vVect = l->scalar(&*ray, (top / bot), 3);
-        double v = l->vLength(vVect, 3);
+        // double v = l->vLength(vVect, 3);
+        double v = l->dot(&*cVect, &*ray, 3);
 
         double rs = pow(sphere->getRadius(), 2);
-        double cs = pow(c, 2);
+        // double cs = pow(c, 2);
+        double cs = l->dot(&*cVect, &*cVect, 3);
         double vs = pow(v, 2);
+
+        // cout << "vs: " << vs << endl;
 
         // cout << "r: " << sphere->getRadius() << endl;
         // cout << "rs: " << rs << endl;
@@ -238,12 +233,15 @@ double* Camera::calcSphereIntersect(double* ray) {
         // cout << "d squared: " << ds << endl;
 
         // Calculate distance of intersection
-        if(ds >= 0){
+        if(ds > 0){
             // cout << "D doesn't suck" << endl;
             //Q = E + (v-d)R
-            double* temp = l->scalar(&*ray, (v - d), 3);
-            qPoint = l->add(eye, temp, 3);
-            double* qVect = l->subtract(qPoint, eye, 3);
+            double* temp = l->scalar(&*ray, (v - sqrt(ds)), 3);
+            qPoint = l->add(pixpt, temp, 3);
+
+            // cout << "Intersect: " << qPoint[0] << ", " << qPoint[1] << ", " << qPoint[2] << endl;
+
+            double* qVect = l->subtract(qPoint, pixpt, 3);
             double distance = l->vLength(qVect, 3);
 
             if(distance > 0) {
@@ -272,10 +270,8 @@ double* Camera::calcSphereIntersect(double* ray) {
             pos = i;
         }
     } 
-    
-    // pos should be the position in the sphere vector of the sphere. Do color stuff!
 
-    double* color = calcSphereColor(pos, qPoint);
+    double* color = calcSphereColor(pos, qPoint, pixpt);
     return color;
 }
 
@@ -283,33 +279,30 @@ double* Camera::diffuseReflection(double* normal, double* color, double* interse
     double* result = new double[3];
     result[0] = 0; result[1] = 0; result[2] = 0;
 
+    // cout << "Diffuse Normal: " << normal[0] << ", " << normal[1] << ", " << normal[2] << endl;
+
+    // cout << "Intersect: " << intersect[0] << ", " << intersect[1] << ", " << intersect[2] << endl;
+
     for(unsigned int i = 0; i < lights.size(); i++) {
         // lights[i]->printLight();
         double* toLight = new double[3];
         toLight[0] = lights[i]->getX() - intersect[0];
         toLight[1] = lights[i]->getY() - intersect[1];
         toLight[2] = lights[i]->getZ() - intersect[2];
-
-        // toLight[0] = intersect[0] - lights[i]->getX();
-        // toLight[1] = intersect[1] - lights[i]->getY();
-        // toLight[2] = intersect[2] - lights[i]->getZ();
         l->makeUnit(&(*toLight), 3);
 
         double theta = l->dot(normal, toLight, 3);
-        // theta = cos(theta);
-        if(theta < 0) {
-            theta = theta * -1;
-        }
-        // cout << "Theta: " << theta << endl;
 
-        result[0] += lights[i]->getR() * theta;
-        result[1] += lights[i]->getG() * theta;
-        result[2] += lights[i]->getB() * theta;
+        if(theta > 0.0) {
+            // cout << "Diffuse is happening" << endl;
+            // result[0] += lights[i]->getR() * theta;
+            // result[1] += lights[i]->getG() * theta;
+            // result[2] += lights[i]->getB() * theta;
 
-        // result[0] += ambient[0] * lights[i]->getR() * theta;
-        // result[1] += ambient[1] * lights[i]->getG() * theta;
-        // result[2] += ambient[2] * lights[i]->getB() * theta;
-
+            result[0] += ambient[0] * lights[i]->getR() * theta;
+            result[1] += ambient[1] * lights[i]->getG() * theta;
+            result[2] += ambient[2] * lights[i]->getB() * theta;
+        } 
         delete [] toLight;
     }
 
@@ -320,15 +313,15 @@ double* Camera::diffuseReflection(double* normal, double* color, double* interse
         if(result[i] < 0) {
             result[i] = 0;
         }
-        // result[i] *= 255;
     }
     return result;
 }
 
-double* Camera::specularReflection(double* normal, double* intersect) {
+double* Camera::specularReflection(double* normal, double* intersect, double* pixpt) {
     double* result = new double [3];
     result[0] = 0; result[1] = 0; result[2] = 0;
-    double* c = l->subtract(&(*eye), &(*intersect), 3);
+
+    double* c = l->subtract(&(*pixpt), &(*intersect), 3);
     l->makeUnit(c, 3);
     double phongConst = 16;
 
@@ -340,41 +333,43 @@ double* Camera::specularReflection(double* normal, double* intersect) {
         toLight[2] = lights[i]->getZ() - intersect[2];
         l->makeUnit(&(*toLight), 3);
 
+        // cout << "Light: " << lights[i]->getX() << ", " << lights[i]->getY() << ", " << lights[i]->getZ() << endl;
+        // cout << "Normal: " << normal[0] << ", " << normal[1] << ", " << normal[2] << endl;
+        // cout << "toL: " << toLight[0] << ", " << toLight[1] << ", " << toLight[2] << endl;
         double nDotL = l->dot(&(*normal), &(*toLight) , 3);
+        // cout << "nDotL: " << nDotL << endl;
         if(nDotL > 0) {
-            // N * (L dot N)
-            double* lProjN = l->scalar(&(*normal), 2 * nDotL, 3);
-            // NL - L
-            // double* t = l->scalar(l->subtract(&(*lProjN), &(*toLight), 3), 2, 3);
+            // cout << "Specular is happening" << endl;
+            double* temp = l->scalar(&(*normal), 2, 3);
+            double* lProjN = l->scalar(&(*temp), nDotL, 3);
+            // l->makeUnit(&(*lProjN), 3);
+            delete [] temp;
+
             double* t = l->subtract(&(*lProjN), &(*toLight), 3);
+            l->makeUnit(&(*t), 3);
 
-            // L + 2T
-            // double* r = l->add(&(*toLight), l->scalar(&(*t), 2, 3), 3);
-            // double* r =l->scalar(&(*lProjN), 1, 3);
-            // double* r = l->add(&(*toLight), &(*t), 3)
-            double*r = lProjN;
-            l->makeUnit(r, 3);
+            // cout << "pixpt: " << pixpt[0] << ", " << pixpt[1] << ", " << pixpt[2] << endl;
+            // cout << "inter: " << intersect[0] << ", " << intersect[1] << ", " << intersect[2] << endl;
+            // cout << "c: " << c[0] << ", " << c[1] << ", " << c[2] << endl;
+            // cout << "t: " << t[0] << ", " << t[1] << ", " << t[2] << endl;
 
-            double cDotR = l->dot(&(*c), &(*r), 3);
-            // cout << "v dot R: " << cDotR << endl;
-            if(cDotR < 0) {
-                cDotR = 0;
-            }
+            double cDotR = l->dot(&(*c), &(*t), 3);
+
+            // cout << "cDotR: " << cDotR << endl;
+
+            // cout << "cDotR: " << cDotR << endl;
 
             double phong = pow(cDotR, phongConst);
+
+            // cout << "Phong: " << phong << endl;
+
             if(phong < 0) {
                 phong = 0;
             }
 
-            // cout << "Phong: " << phong << endl;
-
-            result[0] += lights[i]->getR() * phong;
-            result[1] += lights[i]->getG() * phong;
-            result[2] += lights[i]->getB() * phong;
-
-            // result[0] += ambient[0] * lights[i]->getR() * phong;
-            // result[1] += ambient[1] * lights[i]->getG() * phong;
-            // result[2] += ambient[2] * lights[i]->getB() * phong;
+            result[0] += ambient[0] * lights[i]->getR() * phong;
+            result[1] += ambient[1] * lights[i]->getG() * phong;
+            result[2] += ambient[2] * lights[i]->getB() * phong;
 
             delete [] t;
             delete [] lProjN;
@@ -390,35 +385,30 @@ double* Camera::specularReflection(double* normal, double* intersect) {
         if(result[i] < 0) {
             result[i] = 0;
         }
-        // result[i] *= 255;
     }
 
     return result;
 }
 
 // Returns a [3] array of RBG values
-double* Camera::calcSphereColor(int position, double* intersect) {
+double* Camera::calcSphereColor(int position, double* intersect, double* pixpt) {
     Sphere sphere = *spheres[position];
     double* result = new double [3];
 
-    // cout <<"Intersect: " << intersect[0] << ", " << intersect[1] << ", " << intersect [2] << endl;
+    // cout << "Intersect: " << intersect[0] << ", " << intersect[1] << ", " << intersect[2] << endl;
 
     //Calculate ambient reflection
-    double ambientReflect[3];
-    ambientReflect[0] = ambient[0] * sphere.getR();
-    ambientReflect[1] = ambient[1] * sphere.getG();
-    ambientReflect[2] = ambient[2] * sphere.getB();
-    // double ambientReflect[3] = {0, 0, 0};
+    // double ambientReflect[3];
+    // ambientReflect[0] = ambient[0] * sphere.getR();
+    // ambientReflect[1] = ambient[1] * sphere.getG();
+    // ambientReflect[2] = ambient[2] * sphere.getB();
+    double ambientReflect[3] = {0, 0, 0};
 
     //Calculate diffuse reflection
     double* normal = new double[3];
     normal[0] = intersect[0] - sphere.getX();
     normal[1] = intersect[1] - sphere.getY();
     normal[2] = intersect[2] - sphere.getZ();
-
-    // normal[0] = sphere.getX() - intersect[0];
-    // normal[1] = sphere.getY() - intersect[1];
-    // normal[2] = sphere.getZ() - intersect[2];
     l->makeUnit(&(*normal), 3);
 
     double* ctemp = new double [3];
@@ -428,9 +418,10 @@ double* Camera::calcSphereColor(int position, double* intersect) {
     double* diffuseReflect = diffuseReflection(normal, ctemp, intersect);
     // double diffuseReflect[3] = {0,0,0};
 
-    double* specularReflect = specularReflection(normal, intersect);
+    double* specularReflect = specularReflection(normal, intersect, pixpt);
     // double specularReflect[3] = {0,0,0};
 
+    // cout << "AmbRef: " << ambientReflect[0] << ", " << ambientReflect[1] << ", " << ambientReflect[2] << endl;
     // cout << "DifRef: " << diffuseReflect[0] << ", " << diffuseReflect[1] << ", " << diffuseReflect[2] << endl;
     // cout << "SpecRef: " << specularReflect[0] << ", " << specularReflect[1] << ", " << specularReflect[2] << endl;
 
