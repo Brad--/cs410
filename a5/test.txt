@@ -1,0 +1,18 @@
+eye 5 5 0
+up 0 1 0
+look 0 0 0
+d 2
+bounds -1 -1 1 1
+res 500 500
+ambient 0.1 0.1 0.1
+diffuse .25 .25 .25
+specular 1 1 1
+light 0 10 0 1 1 1 1
+rem light 2 4 2 1 .75 0 .75
+rem light -2 4 -2 1 0 .75 0
+sphere 0 0 0 1 0.2 0.2 0.2
+rem sphere 2 2 0 .75 .8 .1 .1
+sphere -2 0 0 .75 .1 .9 .1
+sphere 0 0 2 .75 .1 .1 .9
+sphere 0 0 -2 .75 .9 .9 .1
+sphere -2 0 -2 .5 .9 .1 .9
