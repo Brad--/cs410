@@ -1,0 +1,33 @@
+eye 0 10 0
+up 0 1 0
+look 0 0 0
+d 2
+bounds -1 -1 1 1
+res 1000 1000
+ambient 0.3 0.3 0.3
+diffuse .5 .5 .5
+specular 1 1 1
+light 5 4 0 1 0 .75 .75
+light -5 4 0 1 .75 0 .75
+sphere 0 0 0 1.25 .1 .1 .1
+sphere -.33 1.33 -.2 .2 .33 .33 .33
+sphere .33 1.33 -.2 .2 .33 .33 .33
+rem start mouth
+sphere 0 3 .5 .1 .33 .33 .33
+sphere .2 3 .42 .1 .33 .33 .33
+sphere -.2 3 .42 .1 .33 .33 .33
+sphere .4 3 .3 .1 .33 .33 .33
+sphere -.4 3 .3 .1 .33 .33 .33
+rem end mouth
+sphere 5 0 0 2.25 0 0 0
+sphere -5 0 0 2.25 0 0 0
+sphere 0 0 5 2.25 0 0 0
+sphere 0 0 -5 2.25 0 0 0
+sphere 2 0 0 .6 .8 .1 .1
+sphere -2 0 0 .6 0 0 1
+sphere 0 0 2 .6 1 1 0
+sphere 0 0 -2 .6 .65 0 .93
+sphere -1.5 0 -1.5 .6 .33 0 .57
+sphere -1.5 0 1.5 .6 0 1 0
+sphere 1.5 0 -1.5 .6 1 1 1
+sphere 1.5 0 1.5 .6 1 .49 0
